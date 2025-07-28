@@ -1,17 +1,17 @@
-var prodList
-var bonusPts = 0
-var stockInfo
-var itemCnt
-var lastSel
-var sel
-var addBtn
-var totalAmt = 0
-var PRODUCT_ONE = 'p1'
-var p2 = 'p2'
-var product_3 = 'p3'
-var p4 = "p4"
-var PRODUCT_5 = `p5`
-var cartDisp
+var prodList;
+var bonusPts = 0;
+var stockInfo;
+var itemCnt;
+var lastSel;
+var sel;
+var addBtn;
+var totalAmt = 0;
+var PRODUCT_ONE = 'p1';
+var p2 = 'p2';
+var product_3 = 'p3';
+var p4 = 'p4';
+var PRODUCT_5 = `p5`;
+var cartDisp;
 function main() {
   var root;
   var header;
@@ -27,10 +27,42 @@ function main() {
   itemCnt = 0;
   lastSel = null;
   prodList = [
-    {id: PRODUCT_ONE, name: '버그 없애는 키보드', val: 10000, originalVal: 10000, q: 50, onSale: false, suggestSale: false},
-    {id: p2, name: '생산성 폭발 마우스', val: 20000, originalVal: 20000, q: 30, onSale: false, suggestSale: false},
-    {id: product_3, name: "거북목 탈출 모니터암", val: 30000, originalVal: 30000, q: 20, onSale: false, suggestSale: false},
-    {id: p4, name: "에러 방지 노트북 파우치", val: 15000, originalVal: 15000, q: 0, onSale: false, suggestSale: false},
+    {
+      id: PRODUCT_ONE,
+      name: '버그 없애는 키보드',
+      val: 10000,
+      originalVal: 10000,
+      q: 50,
+      onSale: false,
+      suggestSale: false,
+    },
+    {
+      id: p2,
+      name: '생산성 폭발 마우스',
+      val: 20000,
+      originalVal: 20000,
+      q: 30,
+      onSale: false,
+      suggestSale: false,
+    },
+    {
+      id: product_3,
+      name: '거북목 탈출 모니터암',
+      val: 30000,
+      originalVal: 30000,
+      q: 20,
+      onSale: false,
+      suggestSale: false,
+    },
+    {
+      id: p4,
+      name: '에러 방지 노트북 파우치',
+      val: 15000,
+      originalVal: 15000,
+      q: 0,
+      onSale: false,
+      suggestSale: false,
+    },
     {
       id: PRODUCT_5,
       name: `코딩할 때 듣는 Lo-Fi 스피커`,
@@ -38,12 +70,12 @@ function main() {
       originalVal: 25000,
       q: 10,
       onSale: false,
-      suggestSale: false
-    }
-  ]
-  var root = document.getElementById('app')
+      suggestSale: false,
+    },
+  ];
+  var root = document.getElementById('app');
   header = document.createElement('div');
-  header.className = 'mb-8'
+  header.className = 'mb-8';
   header.innerHTML = `
     <h1 class="text-xs font-medium tracking-extra-wide uppercase mb-2">🛒 Hanghae Online Store</h1>
     <div class="text-5xl tracking-tight leading-none">Shopping Cart</div>
@@ -52,19 +84,21 @@ function main() {
   sel = document.createElement('select');
   sel.id = 'product-select';
   gridContainer = document.createElement('div');
-  leftColumn = document.createElement("div");
-  leftColumn['className'] = 'bg-white border border-gray-200 p-8 overflow-y-auto'
+  leftColumn = document.createElement('div');
+  leftColumn['className'] = 'bg-white border border-gray-200 p-8 overflow-y-auto';
   selectorContainer = document.createElement('div');
   selectorContainer.className = 'mb-6 pb-6 border-b border-gray-200';
   sel.className = 'w-full p-3 border border-gray-300 rounded-lg text-base mb-3';
-  gridContainer.className = 'grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 flex-1 overflow-hidden';
+  gridContainer.className =
+    'grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 flex-1 overflow-hidden';
   addBtn = document.createElement('button');
   stockInfo = document.createElement('div');
   addBtn.id = 'add-to-cart';
   stockInfo.id = 'stock-status';
   stockInfo.className = 'text-xs text-red-500 mt-3 whitespace-pre-line';
   addBtn.innerHTML = 'Add to Cart';
-  addBtn.className = 'w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all';
+  addBtn.className =
+    'w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all';
   selectorContainer.appendChild(sel);
   selectorContainer.appendChild(addBtn);
   selectorContainer.appendChild(stockInfo);
@@ -109,7 +143,8 @@ function main() {
     manualOverlay.classList.toggle('hidden');
     manualColumn.classList.toggle('translate-x-full');
   };
-  manualToggle.className = 'fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50';
+  manualToggle.className =
+    'fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50';
   manualToggle.innerHTML = `
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -124,7 +159,8 @@ function main() {
     }
   };
   manualColumn = document.createElement('div');
-  manualColumn.className = 'fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 overflow-y-auto z-50 transform translate-x-full transition-transform duration-300';
+  manualColumn.className =
+    'fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 overflow-y-auto z-50 transform translate-x-full transition-transform duration-300';
   manualColumn.innerHTML = `
     <button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="document.querySelector('.fixed.inset-0').classList.add('hidden'); this.parentElement.classList.add('translate-x-full')">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +240,7 @@ function main() {
       var luckyIdx = Math.floor(Math.random() * prodList.length);
       var luckyItem = prodList[luckyIdx];
       if (luckyItem.q > 0 && !luckyItem.onSale) {
-        luckyItem.val = Math.round(luckyItem.originalVal * 80 / 100);
+        luckyItem.val = Math.round((luckyItem.originalVal * 80) / 100);
         luckyItem.onSale = true;
         alert('⚡번개세일! ' + luckyItem.name + '이(가) 20% 할인 중입니다!');
         onUpdateSelectOptions();
@@ -230,7 +266,7 @@ function main() {
         }
         if (suggest) {
           alert('💝 ' + suggest.name + '은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!');
-          suggest.val = Math.round(suggest.val * (100 - 5) / 100);
+          suggest.val = Math.round((suggest.val * (100 - 5)) / 100);
           suggest.suggestSale = true;
           onUpdateSelectOptions();
           doUpdatePricesInCart();
@@ -238,8 +274,8 @@ function main() {
       }
     }, 60000);
   }, Math.random() * 20000);
-};
-var sum
+}
+var sum;
 function onUpdateSelectOptions() {
   var totalStock;
   var opt;
@@ -251,26 +287,35 @@ function onUpdateSelectOptions() {
     totalStock = totalStock + _p.q;
   }
   for (var i = 0; i < prodList.length; i++) {
-    (function() {
+    (function () {
       var item = prodList[i];
-      opt = document.createElement("option")
+      opt = document.createElement('option');
       opt.value = item.id;
       discountText = '';
       if (item.onSale) discountText += ' ⚡SALE';
       if (item.suggestSale) discountText += ' 💝추천';
       if (item.q === 0) {
-        opt.textContent = item.name + ' - ' + item.val + '원 (품절)' + discountText
-        opt.disabled = true
+        opt.textContent = item.name + ' - ' + item.val + '원 (품절)' + discountText;
+        opt.disabled = true;
         opt.className = 'text-gray-400';
       } else {
         if (item.onSale && item.suggestSale) {
-          opt.textContent = '⚡💝' + item.name + ' - ' + item.originalVal + '원 → ' + item.val + '원 (25% SUPER SALE!)';
+          opt.textContent =
+            '⚡💝' +
+            item.name +
+            ' - ' +
+            item.originalVal +
+            '원 → ' +
+            item.val +
+            '원 (25% SUPER SALE!)';
           opt.className = 'text-purple-600 font-bold';
         } else if (item.onSale) {
-          opt.textContent = '⚡' + item.name + ' - ' + item.originalVal + '원 → ' + item.val + '원 (20% SALE!)';
+          opt.textContent =
+            '⚡' + item.name + ' - ' + item.originalVal + '원 → ' + item.val + '원 (20% SALE!)';
           opt.className = 'text-red-500 font-bold';
         } else if (item.suggestSale) {
-          opt.textContent = '💝' + item.name + ' - ' + item.originalVal + '원 → ' + item.val + '원 (5% 추천할인!)';
+          opt.textContent =
+            '💝' + item.name + ' - ' + item.originalVal + '원 → ' + item.val + '원 (5% 추천할인!)';
           opt.className = 'text-blue-500 font-bold';
         } else {
           opt.textContent = item.name + ' - ' + item.val + '원' + discountText;
@@ -309,7 +354,7 @@ function handleCalculateCartStuff() {
   var loyaltyDiv;
   totalAmt = 0;
   itemCnt = 0;
-  originalTotal = totalAmt
+  originalTotal = totalAmt;
   cartItems = cartDisp.children;
   subTot = 0;
   bulkDisc = subTot;
@@ -366,7 +411,7 @@ function handleCalculateCartStuff() {
           }
         }
         if (disc > 0) {
-          itemDiscounts.push({name: curItem.name, discount: disc * 100});
+          itemDiscounts.push({ name: curItem.name, discount: disc * 100 });
         }
       }
       totalAmt += itemTot * (1 - disc);
@@ -375,7 +420,7 @@ function handleCalculateCartStuff() {
   let discRate = 0;
   var originalTotal = subTot;
   if (itemCnt >= 30) {
-    totalAmt = subTot * 75 / 100;
+    totalAmt = (subTot * 75) / 100;
     discRate = 25 / 100;
   } else {
     discRate = (subTot - totalAmt) / subTot;
@@ -385,8 +430,8 @@ function handleCalculateCartStuff() {
   var tuesdaySpecial = document.getElementById('tuesday-special');
   if (isTuesday) {
     if (totalAmt > 0) {
-      totalAmt = totalAmt * 90 / 100;
-      discRate = 1 - (totalAmt / originalTotal);
+      totalAmt = (totalAmt * 90) / 100;
+      discRate = 1 - totalAmt / originalTotal;
       tuesdaySpecial.classList.remove('hidden');
     } else {
       tuesdaySpecial.classList.add('hidden');
@@ -509,7 +554,7 @@ function handleCalculateCartStuff() {
   handleStockInfoUpdate();
   doRenderBonusPoints();
 }
-var doRenderBonusPoints = function() {
+var doRenderBonusPoints = function () {
   var basePoints;
   var finalPoints;
   var pointsDetail;
@@ -521,7 +566,7 @@ var doRenderBonusPoints = function() {
     document.getElementById('loyalty-points').style.display = 'none';
     return;
   }
-  basePoints = Math.floor(totalAmt / 1000)
+  basePoints = Math.floor(totalAmt / 1000);
   finalPoints = 0;
   pointsDetail = [];
   if (basePoints > 0) {
@@ -581,15 +626,20 @@ var doRenderBonusPoints = function() {
   var ptsTag = document.getElementById('loyalty-points');
   if (ptsTag) {
     if (bonusPts > 0) {
-      ptsTag.innerHTML = '<div>적립 포인트: <span class="font-bold">' + bonusPts + 'p</span></div>' +
-        '<div class="text-2xs opacity-70 mt-1">' + pointsDetail.join(', ') + '</div>';
+      ptsTag.innerHTML =
+        '<div>적립 포인트: <span class="font-bold">' +
+        bonusPts +
+        'p</span></div>' +
+        '<div class="text-2xs opacity-70 mt-1">' +
+        pointsDetail.join(', ') +
+        '</div>';
       ptsTag.style.display = 'block';
     } else {
       ptsTag.textContent = '적립 포인트: 0p';
-      ptsTag.style.display = 'block'
+      ptsTag.style.display = 'block';
     }
   }
-}
+};
 function onGetStockTotal() {
   var sum;
   var i;
@@ -601,7 +651,7 @@ function onGetStockTotal() {
   }
   return sum;
 }
-var handleStockInfoUpdate = function() {
+var handleStockInfoUpdate = function () {
   var infoMsg;
   var totalStock;
   var messageOptimizer;
@@ -619,9 +669,10 @@ var handleStockInfoUpdate = function() {
     }
   });
   stockInfo.textContent = infoMsg;
-}
+};
 function doUpdatePricesInCart() {
-  var totalCount = 0, j = 0;
+  var totalCount = 0,
+    j = 0;
   var cartItems;
   while (cartDisp.children[j]) {
     var qty = cartDisp.children[j].querySelector('.quantity-number');
@@ -646,13 +697,28 @@ function doUpdatePricesInCart() {
       var priceDiv = cartItems[i].querySelector('.text-lg');
       var nameDiv = cartItems[i].querySelector('h3');
       if (product.onSale && product.suggestSale) {
-        priceDiv.innerHTML = '<span class="line-through text-gray-400">₩' + product.originalVal.toLocaleString() + '</span> <span class="text-purple-600">₩' + product.val.toLocaleString() + '</span>';
+        priceDiv.innerHTML =
+          '<span class="line-through text-gray-400">₩' +
+          product.originalVal.toLocaleString() +
+          '</span> <span class="text-purple-600">₩' +
+          product.val.toLocaleString() +
+          '</span>';
         nameDiv.textContent = '⚡💝' + product.name;
       } else if (product.onSale) {
-        priceDiv.innerHTML = '<span class="line-through text-gray-400">₩' + product.originalVal.toLocaleString() + '</span> <span class="text-red-500">₩' + product.val.toLocaleString() + '</span>';
+        priceDiv.innerHTML =
+          '<span class="line-through text-gray-400">₩' +
+          product.originalVal.toLocaleString() +
+          '</span> <span class="text-red-500">₩' +
+          product.val.toLocaleString() +
+          '</span>';
         nameDiv.textContent = '⚡' + product.name;
       } else if (product.suggestSale) {
-        priceDiv.innerHTML = '<span class="line-through text-gray-400">₩' + product.originalVal.toLocaleString() + '</span> <span class="text-blue-500">₩' + product.val.toLocaleString() + '</span>';
+        priceDiv.innerHTML =
+          '<span class="line-through text-gray-400">₩' +
+          product.originalVal.toLocaleString() +
+          '</span> <span class="text-blue-500">₩' +
+          product.val.toLocaleString() +
+          '</span>';
         nameDiv.textContent = '💝' + product.name;
       } else {
         priceDiv.textContent = '₩' + product.val.toLocaleString();
@@ -663,8 +729,8 @@ function doUpdatePricesInCart() {
   handleCalculateCartStuff();
 }
 main();
-addBtn.addEventListener("click", function () {
-  var selItem = sel.value
+addBtn.addEventListener('click', function () {
+  var selItem = sel.value;
   var hasItem = false;
   for (var idx = 0; idx < prodList.length; idx++) {
     if (prodList[idx].id === selItem) {
@@ -685,18 +751,19 @@ addBtn.addEventListener("click", function () {
   if (itemToAdd && itemToAdd.q > 0) {
     var item = document.getElementById(itemToAdd['id']);
     if (item) {
-      var qtyElem = item.querySelector('.quantity-number')
-      var newQty = parseInt(qtyElem['textContent']) + 1
+      var qtyElem = item.querySelector('.quantity-number');
+      var newQty = parseInt(qtyElem['textContent']) + 1;
       if (newQty <= itemToAdd.q + parseInt(qtyElem.textContent)) {
         qtyElem.textContent = newQty;
-        itemToAdd['q']--
+        itemToAdd['q']--;
       } else {
         alert('재고가 부족합니다.');
       }
     } else {
       var newItem = document.createElement('div');
       newItem.id = itemToAdd.id;
-      newItem.className = 'grid grid-cols-[80px_1fr_auto] gap-5 py-5 border-b border-gray-100 first:pt-0 last:border-b-0 last:pb-0';
+      newItem.className =
+        'grid grid-cols-[80px_1fr_auto] gap-5 py-5 border-b border-gray-100 first:pt-0 last:border-b-0 last:pb-0';
       newItem.innerHTML = `
         <div class="w-20 h-20 bg-gradient-black relative overflow-hidden">
           <div class="absolute top-1/2 left-1/2 w-[60%] h-[60%] bg-white/10 -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
@@ -723,11 +790,11 @@ addBtn.addEventListener("click", function () {
     lastSel = selItem;
   }
 });
-cartDisp.addEventListener("click", function (event) {
+cartDisp.addEventListener('click', function (event) {
   var tgt = event.target;
-  if (tgt.classList.contains('quantity-change') || tgt.classList.contains("remove-item")) {
+  if (tgt.classList.contains('quantity-change') || tgt.classList.contains('remove-item')) {
     var prodId = tgt.dataset.productId;
-    var itemElem = document.getElementById(prodId)
+    var itemElem = document.getElementById(prodId);
     var prod = null;
     for (var prdIdx = 0; prdIdx < prodList.length; prdIdx++) {
       if (prodList[prdIdx].id === prodId) {
