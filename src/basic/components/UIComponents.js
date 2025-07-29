@@ -4,6 +4,7 @@
  */
 
 import { DISCOUNT_LABELS } from '../constants.js';
+import { generateDiscountLabel, generatePriceHTML } from '../utils/domUtils.js';
 
 /**
  * 헤더 컴포넌트 생성
@@ -56,7 +57,7 @@ export const createProductSelector = () => {
     container,
     productSelector,
     addToCartButton,
-    stockInfoElement
+    stockInfoElement,
   };
 };
 
@@ -163,7 +164,7 @@ export const createHelpModal = () => {
   return {
     toggleButton,
     overlay,
-    panel
+    panel,
   };
 };
 
@@ -190,18 +191,10 @@ export const createCartItemElement = (product, quantity) => {
   const discountLabel =
     product.onSale && product.suggestSale
       ? DISCOUNT_LABELS.SUPER_SALE
-      : product.onSale
-        ? '⚡'
-        : product.suggestSale
-          ? '💝'
-          : '';
+      : generateDiscountLabel(product);
 
   // 가격 표시 HTML 생성
-  const priceHTML =
-    product.onSale || product.suggestSale
-      ? `<span class="line-through text-gray-400">₩${product.originalVal.toLocaleString()}</span> ` +
-        `<span class="${product.onSale && product.suggestSale ? 'text-purple-600' : product.onSale ? 'text-red-500' : 'text-blue-500'}">₩${product.val.toLocaleString()}</span>`
-      : `₩${product.val.toLocaleString()}`;
+  const priceHTML = generatePriceHTML(product);
 
   cartItem.innerHTML = `
     <div class="w-20 h-20 bg-gradient-black relative overflow-hidden">
@@ -234,7 +227,7 @@ export const createCartItemElement = (product, quantity) => {
 export const createOrderSummary = () => {
   const orderSummary = document.createElement('div');
   orderSummary.className = 'bg-black text-white p-8 flex flex-col';
-  
+
   orderSummary.innerHTML = `
     <h2 class="text-xs font-medium mb-5 tracking-extra-wide uppercase">Order Summary</h2>
     <div class="flex-1 flex flex-col">
@@ -289,21 +282,13 @@ export const updateCartItemDisplay = (itemElement, product, quantity) => {
   const discountLabel =
     product.onSale && product.suggestSale
       ? DISCOUNT_LABELS.SUPER_SALE
-      : product.onSale
-        ? '⚡'
-        : product.suggestSale
-          ? '💝'
-          : '';
+      : generateDiscountLabel(product);
 
   // 가격 표시 HTML 생성
-  const priceHTML =
-    product.onSale || product.suggestSale
-      ? `<span class="line-through text-gray-400">₩${product.originalVal.toLocaleString()}</span> ` +
-        `<span class="${product.onSale && product.suggestSale ? 'text-purple-600' : product.onSale ? 'text-red-500' : 'text-blue-500'}">₩${product.val.toLocaleString()}</span>`
-      : `₩${product.val.toLocaleString()}`;
+  const priceHTML = generatePriceHTML(product);
 
   // 가격 요소들 업데이트
-  priceElements.forEach(priceElement => {
+  priceElements.forEach((priceElement) => {
     priceElement.innerHTML = priceHTML;
   });
 
