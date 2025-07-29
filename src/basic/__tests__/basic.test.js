@@ -36,7 +36,7 @@ describe('basic 테스트', () => {
     beforeEach(async () => {
       vi.useRealTimers();
       vi.spyOn(window, 'alert').mockImplementation(() => {});
-      
+
       // 화요일 할인을 방지하기 위해 월요일로 설정
       const mockDate = new Date('2024-01-01T00:00:00.000Z'); // 월요일
       vi.spyOn(Date.prototype, 'getDay').mockReturnValue(mockDate.getDay());
@@ -162,7 +162,7 @@ describe('basic 테스트', () => {
           it('화요일에 10% 추가 할인 적용', () => {
             // 화요일로 날짜 바꾸기
             vi.restoreAllMocks();
-            const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+            const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일
             vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
             vi.spyOn(window, 'alert').mockImplementation(() => {});
 
@@ -181,7 +181,7 @@ describe('basic 테스트', () => {
           it('화요일 할인은 다른 할인과 중복 적용', () => {
             // 화요일로 날짜 바꾸기
             vi.restoreAllMocks();
-            const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+            const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일
             vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
             vi.spyOn(window, 'alert').mockImplementation(() => {});
 
@@ -259,7 +259,7 @@ describe('basic 테스트', () => {
         it('화요일 구매 시 기본 포인트 2배', () => {
           // 화요일로 날짜 바꾸기
           vi.restoreAllMocks();
-          const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+          const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일
           vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
           vi.spyOn(window, 'alert').mockImplementation(() => {});
 
@@ -651,7 +651,7 @@ describe('basic 테스트', () => {
       it('화요일 + 풀세트 + 대량구매 시나리오', () => {
         // 화요일로 날짜 바꾸기
         vi.restoreAllMocks();
-        const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+        const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일
         vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
         vi.spyOn(window, 'alert').mockImplementation(() => {});
 
