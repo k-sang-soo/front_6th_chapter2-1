@@ -36,6 +36,10 @@ describe('basic 테스트', () => {
     beforeEach(async () => {
       vi.useRealTimers();
       vi.spyOn(window, 'alert').mockImplementation(() => {});
+      
+      // 화요일 할인을 방지하기 위해 월요일로 설정
+      const mockDate = new Date('2024-01-01T00:00:00.000Z'); // 월요일
+      vi.spyOn(Date.prototype, 'getDay').mockReturnValue(mockDate.getDay());
 
       // 전체 DOM 재초기화
       document.body.innerHTML = '<div id="app"></div>';
@@ -56,6 +60,7 @@ describe('basic 테스트', () => {
     });
 
     afterEach(() => {
+      vi.useRealTimers();
       vi.restoreAllMocks();
     });
 
@@ -155,9 +160,11 @@ describe('basic 테스트', () => {
       describe('3.3 특별 할인', () => {
         describe('3.3.1 화요일 할인', () => {
           it('화요일에 10% 추가 할인 적용', () => {
-            const tuesday = new Date('2024-10-15'); // 화요일
-            vi.useFakeTimers();
-            vi.setSystemTime(tuesday);
+            // 화요일로 날짜 바꾸기
+            vi.restoreAllMocks();
+            const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+            vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
+            vi.spyOn(window, 'alert').mockImplementation(() => {});
 
             sel.value = 'p1';
             addBtn.click();
@@ -169,22 +176,20 @@ describe('basic 테스트', () => {
             // 화요일 특별 할인 배너 표시
             const tuesdayBanner = document.getElementById('tuesday-special');
             expect(tuesdayBanner.classList.contains('hidden')).toBe(false);
-
-            vi.useRealTimers();
           });
 
           it('화요일 할인은 다른 할인과 중복 적용', () => {
-            const tuesday = new Date('2024-10-15');
-            vi.useFakeTimers();
-            vi.setSystemTime(tuesday);
+            // 화요일로 날짜 바꾸기
+            vi.restoreAllMocks();
+            const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+            vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
+            vi.spyOn(window, 'alert').mockImplementation(() => {});
 
             addItemsToCart(sel, addBtn, 'p1', 10);
 
             // 100,000원 -> 90,000원 (개별 10%) -> 81,000원 (화요일 10% 추가)
             expect(sum.textContent).toContain('₩81,000');
             expect(discountInfo.textContent).toContain('19.0%'); // 총 19% 할인
-
-            vi.useRealTimers();
           });
         });
 
@@ -252,9 +257,11 @@ describe('basic 테스트', () => {
 
       describe('4.2 추가 적립', () => {
         it('화요일 구매 시 기본 포인트 2배', () => {
-          const tuesday = new Date('2024-10-15');
-          vi.useFakeTimers();
-          vi.setSystemTime(tuesday);
+          // 화요일로 날짜 바꾸기
+          vi.restoreAllMocks();
+          const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+          vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
+          vi.spyOn(window, 'alert').mockImplementation(() => {});
 
           sel.value = 'p1';
           addBtn.click();
@@ -262,8 +269,6 @@ describe('basic 테스트', () => {
           // 9,000원 (화요일 10% 할인) -> 9포인트 * 2 = 18포인트
           expect(loyaltyPoints.textContent).toContain('18p');
           expect(loyaltyPoints.textContent).toContain('화요일 2배');
-
-          vi.useRealTimers();
         });
 
         it('키보드+마우스 세트 구매 시 +50p', () => {
@@ -644,9 +649,11 @@ describe('basic 테스트', () => {
     // 복잡한 시나리오 테스트
     describe('복잡한 통합 시나리오', () => {
       it('화요일 + 풀세트 + 대량구매 시나리오', () => {
-        const tuesday = new Date('2024-10-15');
-        vi.useFakeTimers();
-        vi.setSystemTime(tuesday);
+        // 화요일로 날짜 바꾸기
+        vi.restoreAllMocks();
+        const tuesday = new Date('2024-10-15T00:00:00.000Z'); // 화요일  
+        vi.spyOn(Date.prototype, 'getDay').mockReturnValue(tuesday.getDay());
+        vi.spyOn(window, 'alert').mockImplementation(() => {});
 
         // 키보드 10개, 마우스 10개, 모니터암 10개
         addItemsToCart(sel, addBtn, 'p1', 10);
@@ -658,8 +665,6 @@ describe('basic 테스트', () => {
 
         // 포인트 확인: 405포인트(기본) * 2(화요일) + 50(세트) + 100(풀세트) + 100(30개) = 1060포인트
         expect(loyaltyPoints.textContent).toContain('1060p');
-
-        vi.useRealTimers();
       });
 
       it.skip('번개세일 + 추천할인 + 화요일 시나리오', async () => {
