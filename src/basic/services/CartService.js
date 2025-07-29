@@ -4,6 +4,7 @@
  */
 
 import { MESSAGES } from '../constants.js';
+import { findProductById } from '../utils/domUtils.js';
 
 /**
  * 장바구니에 상품을 추가하거나 기존 상품의 수량을 증가시킵니다.
@@ -14,38 +15,38 @@ import { MESSAGES } from '../constants.js';
  */
 export const addItemToCart = (cartItems, productId, products) => {
   const product = findProductById(products, productId);
-  
+
   if (!product) {
     return { success: false, message: '상품을 찾을 수 없습니다.' };
   }
-  
+
   if (product.q <= 0) {
     return { success: false, message: MESSAGES.STOCK_SHORTAGE };
   }
-  
+
   const existingCartItem = findCartItemById(cartItems, productId);
-  
+
   if (existingCartItem) {
     const quantityElement = existingCartItem.querySelector('.quantity-number');
     const currentQuantity = parseInt(quantityElement.textContent);
     const newQuantity = currentQuantity + 1;
-    
+
     if (newQuantity <= product.q + currentQuantity) {
-      return { 
-        success: true, 
+      return {
+        success: true,
         updatedProduct: { ...product, q: product.q - 1 },
         isNewItem: false,
-        newQuantity
+        newQuantity,
       };
     } else {
       return { success: false, message: MESSAGES.STOCK_SHORTAGE };
     }
   }
-  
-  return { 
-    success: true, 
+
+  return {
+    success: true,
     updatedProduct: { ...product, q: product.q - 1 },
-    isNewItem: true
+    isNewItem: true,
   };
 };
 
@@ -60,32 +61,32 @@ export const addItemToCart = (cartItems, productId, products) => {
 export const updateItemQuantity = (cartItems, productId, quantityChange, products) => {
   const product = findProductById(products, productId);
   const cartItem = findCartItemById(cartItems, productId);
-  
+
   if (!product || !cartItem) {
     return { success: false, message: '상품 또는 장바구니 아이템을 찾을 수 없습니다.' };
   }
-  
+
   const quantityElement = cartItem.querySelector('.quantity-number');
   const currentQuantity = parseInt(quantityElement.textContent);
   const newQuantity = currentQuantity + quantityChange;
-  
+
   if (newQuantity <= 0) {
     return {
       success: true,
       action: 'remove',
-      updatedProduct: { ...product, q: product.q + currentQuantity }
+      updatedProduct: { ...product, q: product.q + currentQuantity },
     };
   }
-  
+
   if (newQuantity <= product.q + currentQuantity) {
     return {
       success: true,
       action: 'update',
       newQuantity,
-      updatedProduct: { ...product, q: product.q - quantityChange }
+      updatedProduct: { ...product, q: product.q - quantityChange },
     };
   }
-  
+
   return { success: false, message: MESSAGES.STOCK_SHORTAGE };
 };
 
@@ -99,17 +100,17 @@ export const updateItemQuantity = (cartItems, productId, quantityChange, product
 export const removeItemFromCart = (cartItems, productId, products) => {
   const product = findProductById(products, productId);
   const cartItem = findCartItemById(cartItems, productId);
-  
+
   if (!product || !cartItem) {
     return { success: false, message: '상품 또는 장바구니 아이템을 찾을 수 없습니다.' };
   }
-  
+
   const quantityElement = cartItem.querySelector('.quantity-number');
   const quantityToRestore = parseInt(quantityElement.textContent);
-  
+
   return {
     success: true,
-    updatedProduct: { ...product, q: product.q + quantityToRestore }
+    updatedProduct: { ...product, q: product.q + quantityToRestore },
   };
 };
 
@@ -120,13 +121,13 @@ export const removeItemFromCart = (cartItems, productId, products) => {
  */
 export const calculateCartTotalQuantity = (cartItems) => {
   let totalQuantity = 0;
-  
+
   for (let i = 0; i < cartItems.length; i++) {
     const quantityElement = cartItems[i].querySelector('.quantity-number');
     const quantity = parseInt(quantityElement.textContent);
     totalQuantity += quantity;
   }
-  
+
   return totalQuantity;
 };
 
@@ -138,7 +139,7 @@ export const calculateCartTotalQuantity = (cartItems) => {
  */
 export const calculateCartSubtotal = (cartItems, products) => {
   let subtotal = 0;
-  
+
   for (let i = 0; i < cartItems.length; i++) {
     const product = findProductById(products, cartItems[i].id);
     if (product) {
@@ -147,7 +148,7 @@ export const calculateCartSubtotal = (cartItems, products) => {
       subtotal += product.val * quantity;
     }
   }
-  
+
   return subtotal;
 };
 
@@ -159,13 +160,13 @@ export const calculateCartSubtotal = (cartItems, products) => {
  */
 export const getCartItemDetails = (cartItems, products) => {
   const itemDetails = [];
-  
+
   for (let i = 0; i < cartItems.length; i++) {
     const product = findProductById(products, cartItems[i].id);
     if (product) {
       const quantityElement = cartItems[i].querySelector('.quantity-number');
       const quantity = parseInt(quantityElement.textContent);
-      
+
       itemDetails.push({
         id: product.id,
         name: product.name,
@@ -174,11 +175,11 @@ export const getCartItemDetails = (cartItems, products) => {
         quantity,
         total: product.val * quantity,
         onSale: product.onSale,
-        suggestSale: product.suggestSale
+        suggestSale: product.suggestSale,
       });
     }
   }
-  
+
   return itemDetails;
 };
 
@@ -189,21 +190,6 @@ export const getCartItemDetails = (cartItems, products) => {
  */
 export const isCartEmpty = (cartItems) => {
   return cartItems.length === 0;
-};
-
-/**
- * 상품 ID로 상품을 찾습니다.
- * @param {Array} products - 전체 상품 목록
- * @param {string} productId - 찾을 상품 ID
- * @returns {Object|null} 찾은 상품 객체 또는 null
- */
-const findProductById = (products, productId) => {
-  for (let i = 0; i < products.length; i++) {
-    if (products[i].id === productId) {
-      return products[i];
-    }
-  }
-  return null;
 };
 
 /**
