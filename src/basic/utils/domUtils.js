@@ -139,8 +139,9 @@ export const getDOMElements = (() => {
 export const safeQuerySelector = (selector, parent = document) => {
   try {
     return parent.querySelector(selector);
-  } catch (error) {
-    console.warn(`Invalid selector: ${selector}`, error);
+  } catch {
+    // Development warning for invalid selector
+    // console.warn(`Invalid selector: ${selector}`);
     return null;
   }
 };

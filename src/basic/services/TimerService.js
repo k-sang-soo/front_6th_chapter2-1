@@ -66,7 +66,7 @@ class TimerStateManager {
         clearTimeout(id);
       }
     });
-    
+
     // 상태 초기화
     this.activeTimers.clear();
     this.activeSales.clear();
@@ -104,7 +104,7 @@ export const createTimerService = (dependencies = {}) => {
     alertFn = window.alert,
     timerFn = setInterval,
     delayFn = setTimeout,
-    stateManager = new TimerStateManager()
+    stateManager = new TimerStateManager(),
   } = dependencies;
 
   // 의존성 검증
@@ -132,21 +132,21 @@ export const createTimerService = (dependencies = {}) => {
       const delayTimer = delayFn(() => {
         const intervalTimer = timerFn(() => {
           const saleResult = processLightningSale(products, stateManager);
-          
+
           if (saleResult.success) {
             executeSaleNotification(alertFn, saleResult.selectedProduct, 'lightning');
-            
+
             if (onSaleStart) {
               onSaleStart(saleResult.selectedProduct);
             }
           }
         }, TIMERS.LIGHTNING_SALE_INTERVAL);
-        
+
         intervalManagementId = stateManager.registerTimer(intervalTimer, 'interval');
       }, lightningDelay);
-      
+
       const delayManagementId = stateManager.registerTimer(delayTimer, 'timeout');
-      
+
       return {
         stop: () => {
           if (intervalManagementId) {
@@ -160,8 +160,8 @@ export const createTimerService = (dependencies = {}) => {
         getStatus: () => ({
           delayId: delayManagementId,
           intervalId: intervalManagementId,
-          isActive: intervalManagementId !== null
-        })
+          isActive: intervalManagementId !== null,
+        }),
       };
     },
 
@@ -175,30 +175,30 @@ export const createTimerService = (dependencies = {}) => {
      */
     startSuggestionSale: (products, getLastSelectedProduct, onSuggestionStart, isCartEmpty) => {
       let intervalManagementId = null;
-      
+
       const delayTimer = delayFn(() => {
         const intervalTimer = timerFn(() => {
           const saleResult = processSuggestionSale(
             products,
             getLastSelectedProduct,
             isCartEmpty,
-            stateManager
+            stateManager,
           );
-          
+
           if (saleResult.success) {
             executeSaleNotification(alertFn, saleResult.suggestedProduct, 'suggestion');
-            
+
             if (onSuggestionStart) {
               onSuggestionStart(saleResult.suggestedProduct);
             }
           }
         }, TIMERS.SUGGESTION_SALE_INTERVAL);
-        
+
         intervalManagementId = stateManager.registerTimer(intervalTimer, 'interval');
       }, generateRandomDelay(TIMERS.MAX_SUGGESTION_DELAY));
-      
+
       const delayManagementId = stateManager.registerTimer(delayTimer, 'timeout');
-      
+
       return {
         stop: () => {
           if (intervalManagementId) {
@@ -212,8 +212,8 @@ export const createTimerService = (dependencies = {}) => {
         getStatus: () => ({
           delayId: delayManagementId,
           intervalId: intervalManagementId,
-          isActive: intervalManagementId !== null
-        })
+          isActive: intervalManagementId !== null,
+        }),
       };
     },
 
@@ -224,13 +224,13 @@ export const createTimerService = (dependencies = {}) => {
     cleanup: () => {
       const beforeCount = stateManager.getActiveTimerCount();
       const beforeSaleCount = stateManager.getActiveSaleCount();
-      
+
       stateManager.cleanup();
-      
+
       return {
         clearedTimers: beforeCount,
         clearedSales: beforeSaleCount,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     },
 
@@ -241,8 +241,8 @@ export const createTimerService = (dependencies = {}) => {
     getStatus: () => ({
       activeTimers: stateManager.getActiveTimerCount(),
       activeSales: stateManager.getActiveSaleCount(),
-      uptime: Date.now()
-    })
+      uptime: Date.now(),
+    }),
   };
 };
 
@@ -254,30 +254,30 @@ export const createTimerService = (dependencies = {}) => {
  */
 const processLightningSale = (products, stateManager) => {
   const eligibleProducts = getEligibleProductsForLightningSale(products);
-  
+
   if (eligibleProducts.length === 0) {
     return { success: false, reason: 'no_eligible_products' };
   }
-  
+
   const selectedProduct = selectRandomProduct(eligibleProducts);
-  
+
   // Race condition 방지: 상태 관리자를 통한 안전한 등록
   if (!stateManager.registerSale(selectedProduct.id, 'lightning')) {
     return { success: false, reason: 'sale_already_active' };
   }
-  
+
   const updatedProduct = applyLightningSale(selectedProduct);
-  
+
   // 성공 시 일정 시간 후 세일 상태 해제 (자동 정리)
   setTimeout(() => {
     stateManager.unregisterSale(selectedProduct.id, 'lightning');
   }, TIMERS.LIGHTNING_SALE_INTERVAL * 2);
-  
+
   return {
     success: true,
     selectedProduct: updatedProduct,
     saleId: `${selectedProduct.id}_lightning`,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 };
 
@@ -294,33 +294,33 @@ const processSuggestionSale = (products, getLastSelectedProduct, isCartEmpty, st
   const validationResult = validateSuggestionSaleConditions(
     products,
     getLastSelectedProduct,
-    isCartEmpty
+    isCartEmpty,
   );
-  
+
   if (!validationResult.isValid) {
     return { success: false, reason: validationResult.reason };
   }
-  
+
   const { lastSelectedProduct, suggestedProduct } = validationResult;
-  
+
   // Race condition 방지: 상태 관리자를 통한 안전한 등록
   if (!stateManager.registerSale(suggestedProduct.id, 'suggestion')) {
     return { success: false, reason: 'sale_already_active' };
   }
-  
+
   const updatedProduct = applySuggestionSale(suggestedProduct);
-  
+
   // 성공 시 일정 시간 후 세일 상태 해제 (자동 정리)
   setTimeout(() => {
     stateManager.unregisterSale(suggestedProduct.id, 'suggestion');
   }, TIMERS.SUGGESTION_SALE_INTERVAL * 2);
-  
+
   return {
     success: true,
     suggestedProduct: updatedProduct,
     lastSelectedProduct,
     saleId: `${suggestedProduct.id}_suggestion`,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 };
 
@@ -345,21 +345,21 @@ const validateSuggestionSaleConditions = (products, getLastSelectedProduct, isCa
   if (isCartEmpty()) {
     return { isValid: false, reason: 'cart_empty' };
   }
-  
+
   const lastSelectedProduct = getLastSelectedProduct();
   if (!lastSelectedProduct) {
     return { isValid: false, reason: 'no_last_selected' };
   }
-  
+
   const suggestedProduct = findSuggestionProduct(products, lastSelectedProduct);
   if (!suggestedProduct) {
     return { isValid: false, reason: 'no_suggested_product' };
   }
-  
+
   return {
     isValid: true,
     lastSelectedProduct,
-    suggestedProduct
+    suggestedProduct,
   };
 };
 
@@ -370,10 +370,9 @@ const validateSuggestionSaleConditions = (products, getLastSelectedProduct, isCa
  * @param {string} saleType - 세일 타입
  */
 const executeSaleNotification = (alertFn, product, saleType) => {
-  const messageTemplate = saleType === 'lightning' 
-    ? MESSAGES.LIGHTNING_SALE_ALERT 
-    : MESSAGES.SUGGESTION_SALE_ALERT;
-    
+  const messageTemplate =
+    saleType === 'lightning' ? MESSAGES.LIGHTNING_SALE_ALERT : MESSAGES.SUGGESTION_SALE_ALERT;
+
   const alertMessage = formatSaleMessage(messageTemplate, product.name);
   alertFn(alertMessage);
 };
@@ -416,7 +415,7 @@ export const startSuggestionSale = (
     products,
     getLastSelectedProduct,
     onSuggestionStart,
-    isCartEmpty
+    isCartEmpty,
   );
 };
 
@@ -502,16 +501,16 @@ export const getDiscountStatus = (product) => {
  */
 export const initializeTimers = (products, getLastSelectedProduct, onSaleStart, isCartEmpty) => {
   const timerService = createTimerService();
-  
+
   // 타이머 시작 및 참조 저장
   const lightningTimer = timerService.startLightningSale(products, onSaleStart);
   const suggestionTimer = timerService.startSuggestionSale(
-    products, 
-    getLastSelectedProduct, 
-    onSaleStart, 
-    isCartEmpty
+    products,
+    getLastSelectedProduct,
+    onSaleStart,
+    isCartEmpty,
   );
-  
+
   // 향상된 타이머 서비스 인터페이스 반환
   return {
     ...timerService,
@@ -524,7 +523,7 @@ export const initializeTimers = (products, getLastSelectedProduct, onSaleStart, 
     getAllTimerStatus: () => ({
       service: timerService.getStatus(),
       lightning: lightningTimer.getStatus(),
-      suggestion: suggestionTimer.getStatus()
+      suggestion: suggestionTimer.getStatus(),
     }),
     /**
      * 특정 타이머만 중지합니다.
@@ -545,7 +544,7 @@ export const initializeTimers = (products, getLastSelectedProduct, onSaleStart, 
         default:
           throw new Error(`Unknown timer type: ${timerType}`);
       }
-    }
+    },
   };
 };
 

@@ -147,12 +147,12 @@ export const createHelpModal = () => {
   `;
 
   // 이벤트 리스너 설정
-  toggleButton.onclick = function () {
+  toggleButton.onclick = () => {
     overlay.classList.toggle('hidden');
     panel.classList.toggle('translate-x-full');
   };
 
-  overlay.onclick = function (e) {
+  overlay.onclick = (e) => {
     if (e.target === overlay) {
       overlay.classList.add('hidden');
       panel.classList.add('translate-x-full');

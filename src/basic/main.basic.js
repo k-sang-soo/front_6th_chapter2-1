@@ -97,7 +97,8 @@ const AppState = {
     if (Object.prototype.hasOwnProperty.call(this.ui, elementName)) {
       this.ui[elementName] = element;
     } else {
-      console.warn(`Unknown UI element: ${elementName}`);
+      // Development warning for invalid UI element registration
+      // console.warn(`Unknown UI element: ${elementName}`);
     }
   },
 
@@ -145,7 +146,7 @@ function main() {
 
   gridContainer = document.createElement('div');
   leftColumn = document.createElement('div');
-  leftColumn['className'] = 'bg-white border border-gray-200 p-8 overflow-y-auto';
+  leftColumn.className = 'bg-white border border-gray-200 p-8 overflow-y-auto';
   gridContainer.className =
     'grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 flex-1 overflow-hidden';
   leftColumn.appendChild(selectorContainer);
@@ -170,8 +171,9 @@ function main() {
   rootElement.appendChild(manualToggle);
   rootElement.appendChild(manualOverlay);
   // 초기 재고 총계 계산 (디버깅용)
-  const initialTotalStock = AppState.products.reduce((total, product) => total + product.q, 0);
-  console.info('Initial total stock:', initialTotalStock);
+  // const initialTotalStock = AppState.products.reduce((total, product) => total + product.q, 0);
+  // Initial stock logging for debugging
+  // console.info('Initial total stock:', initialTotalStock);
   updateProductSelectOptions();
   calculateCartTotals();
 
