@@ -1,3 +1,4 @@
+/* eslint-disable */
 var prodList;
 var bonusPts = 0;
 var stockInfo;
