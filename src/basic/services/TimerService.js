@@ -3,11 +3,7 @@
  * @fileoverview 번개세일과 추천할인 타이머를 관리하고 상품 할인을 적용합니다.
  */
 
-import {
-  DISCOUNT_RATES,
-  TIMERS,
-  MESSAGES
-} from '../constants.js';
+import { DISCOUNT_RATES, TIMERS, MESSAGES } from '../constants.js';
 
 /**
  * 번개세일을 시작합니다.
@@ -16,22 +12,24 @@ import {
  */
 export const startLightningSale = (products, onSaleStart) => {
   const lightningDelay = Math.random() * TIMERS.MAX_INITIAL_DELAY;
-  
+
   setTimeout(() => {
     setInterval(() => {
       const eligibleProducts = getEligibleProductsForLightningSale(products);
-      
+
       if (eligibleProducts.length > 0) {
         const randomIndex = Math.floor(Math.random() * eligibleProducts.length);
         const selectedProduct = eligibleProducts[randomIndex];
-        
+
         applyLightningSale(selectedProduct);
-        
-        const alertMessage = MESSAGES.LIGHTNING_SALE_ALERT
-          .replace('{productName}', selectedProduct.name);
-        
+
+        const alertMessage = MESSAGES.LIGHTNING_SALE_ALERT.replace(
+          '{productName}',
+          selectedProduct.name,
+        );
+
         alert(alertMessage);
-        
+
         if (onSaleStart) {
           onSaleStart(selectedProduct);
         }
@@ -47,28 +45,35 @@ export const startLightningSale = (products, onSaleStart) => {
  * @param {Function} onSuggestionStart - 추천할인 시작 콜백 함수
  * @param {Function} isCartEmpty - 장바구니 비어있음 확인 함수
  */
-export const startSuggestionSale = (products, getLastSelectedProduct, onSuggestionStart, isCartEmpty) => {
+export const startSuggestionSale = (
+  products,
+  getLastSelectedProduct,
+  onSuggestionStart,
+  isCartEmpty,
+) => {
   setTimeout(() => {
     setInterval(() => {
       if (isCartEmpty()) {
         return;
       }
-      
+
       const lastSelectedProduct = getLastSelectedProduct();
       if (!lastSelectedProduct) {
         return;
       }
-      
+
       const suggestedProduct = findSuggestionProduct(products, lastSelectedProduct);
-      
+
       if (suggestedProduct) {
         applySuggestionSale(suggestedProduct);
-        
-        const alertMessage = MESSAGES.SUGGESTION_SALE_ALERT
-          .replace('{productName}', suggestedProduct.name);
-        
+
+        const alertMessage = MESSAGES.SUGGESTION_SALE_ALERT.replace(
+          '{productName}',
+          suggestedProduct.name,
+        );
+
         alert(alertMessage);
-        
+
         if (onSuggestionStart) {
           onSuggestionStart(suggestedProduct);
         }
@@ -83,9 +88,7 @@ export const startSuggestionSale = (products, getLastSelectedProduct, onSuggesti
  * @returns {Array} 번개세일 가능한 상품 목록
  */
 export const getEligibleProductsForLightningSale = (products) => {
-  return products.filter(product => 
-    product.q > 0 && !product.onSale
-  );
+  return products.filter((product) => product.q > 0 && !product.onSale);
 };
 
 /**
@@ -97,9 +100,7 @@ export const getEligibleProductsForLightningSale = (products) => {
 export const findSuggestionProduct = (products, lastSelectedProductId) => {
   for (let i = 0; i < products.length; i++) {
     const product = products[i];
-    if (product.id !== lastSelectedProductId && 
-        product.q > 0 && 
-        !product.suggestSale) {
+    if (product.id !== lastSelectedProductId && product.q > 0 && !product.suggestSale) {
       return product;
     }
   }
@@ -112,14 +113,12 @@ export const findSuggestionProduct = (products, lastSelectedProductId) => {
  * @returns {Object} 할인이 적용된 상품 객체
  */
 export const applyLightningSale = (product) => {
-  const discountedPrice = Math.round(
-    product.originalVal * (1 - DISCOUNT_RATES.LIGHTNING_SALE)
-  );
-  
+  const discountedPrice = Math.round(product.originalVal * (1 - DISCOUNT_RATES.LIGHTNING_SALE));
+
   return {
     ...product,
     val: discountedPrice,
-    onSale: true
+    onSale: true,
   };
 };
 
@@ -129,14 +128,12 @@ export const applyLightningSale = (product) => {
  * @returns {Object} 할인이 적용된 상품 객체
  */
 export const applySuggestionSale = (product) => {
-  const discountedPrice = Math.round(
-    product.val * (1 - DISCOUNT_RATES.SUGGESTION_SALE)
-  );
-  
+  const discountedPrice = Math.round(product.val * (1 - DISCOUNT_RATES.SUGGESTION_SALE));
+
   return {
     ...product,
     val: discountedPrice,
-    suggestSale: true
+    suggestSale: true,
   };
 };
 
@@ -152,7 +149,7 @@ export const getDiscountStatus = (product) => {
     isSuperSale: product.onSale && product.suggestSale,
     currentPrice: product.val,
     originalPrice: product.originalVal,
-    discountAmount: product.originalVal - product.val
+    discountAmount: product.originalVal - product.val,
   };
 };
 
@@ -166,7 +163,7 @@ export const getDiscountStatus = (product) => {
 export const initializeTimers = (products, getLastSelectedProduct, onSaleStart, isCartEmpty) => {
   // 번개세일 타이머 시작
   startLightningSale(products, onSaleStart);
-  
+
   // 추천할인 타이머 시작
   startSuggestionSale(products, getLastSelectedProduct, onSaleStart, isCartEmpty);
 };

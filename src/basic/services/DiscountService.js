@@ -8,7 +8,7 @@ import {
   DISCOUNT_RATES,
   QUANTITY_THRESHOLDS,
   DAYS,
-  DISCOUNT_DISPLAY_MESSAGES
+  DISCOUNT_DISPLAY_MESSAGES,
 } from '../constants.js';
 
 /**
@@ -21,7 +21,7 @@ export const calculateItemDiscount = (productId, quantity) => {
   if (quantity < QUANTITY_THRESHOLDS.BULK_DISCOUNT_MIN) {
     return 0;
   }
-  
+
   switch (productId) {
     case PRODUCT_IDS.KEYBOARD:
       return DISCOUNT_RATES.KEYBOARD_BULK;
@@ -49,20 +49,20 @@ export const calculateBulkDiscount = (totalQuantity, subtotal) => {
     const discountRate = DISCOUNT_RATES.BULK_PURCHASE;
     const discountAmount = subtotal * discountRate;
     const finalAmount = subtotal - discountAmount;
-    
+
     return {
       discountRate,
       discountAmount,
       finalAmount,
-      applicable: true
+      applicable: true,
     };
   }
-  
+
   return {
     discountRate: 0,
     discountAmount: 0,
     finalAmount: subtotal,
-    applicable: false
+    applicable: false,
   };
 };
 
@@ -74,25 +74,25 @@ export const calculateBulkDiscount = (totalQuantity, subtotal) => {
  */
 export const calculateTuesdayDiscount = (amount, date = new Date()) => {
   const isTuesday = date.getDay() === DAYS.TUESDAY;
-  
+
   if (isTuesday && amount > 0) {
     const discountRate = DISCOUNT_RATES.TUESDAY_SPECIAL;
     const discountAmount = amount * discountRate;
     const finalAmount = amount - discountAmount;
-    
+
     return {
       discountRate,
       discountAmount,
       finalAmount,
-      applicable: true
+      applicable: true,
     };
   }
-  
+
   return {
     discountRate: 0,
     discountAmount: 0,
     finalAmount: amount,
-    applicable: false
+    applicable: false,
   };
 };
 
@@ -104,24 +104,24 @@ export const calculateTuesdayDiscount = (amount, date = new Date()) => {
 export const applyItemDiscounts = (cartItemDetails) => {
   let totalAmount = 0;
   const discountDetails = [];
-  
-  cartItemDetails.forEach(item => {
+
+  cartItemDetails.forEach((item) => {
     const discountRate = calculateItemDiscount(item.id, item.quantity);
     const discountedAmount = item.total * (1 - discountRate);
     totalAmount += discountedAmount;
-    
+
     if (discountRate > 0) {
       discountDetails.push({
         name: item.name,
         discountRate,
-        discount: discountRate * 100
+        discount: discountRate * 100,
       });
     }
   });
-  
+
   return {
     totalAmount,
-    discountDetails
+    discountDetails,
   };
 };
 
@@ -135,13 +135,13 @@ export const calculateFinalDiscount = (originalTotal, finalTotal) => {
   if (originalTotal <= 0) {
     return { totalDiscountRate: 0, savedAmount: 0 };
   }
-  
+
   const totalDiscountRate = (originalTotal - finalTotal) / originalTotal;
   const savedAmount = originalTotal - finalTotal;
-  
+
   return {
     totalDiscountRate,
-    savedAmount
+    savedAmount,
   };
 };
 
@@ -154,33 +154,35 @@ export const calculateFinalDiscount = (originalTotal, finalTotal) => {
  */
 export const generateDiscountMessages = (isBulkDiscount, itemDiscounts, isTuesdayDiscount) => {
   const messages = [];
-  
+
   if (isBulkDiscount) {
     messages.push({
       type: 'bulk',
       message: DISCOUNT_DISPLAY_MESSAGES.BULK_PURCHASE,
-      percentage: DISCOUNT_RATES.BULK_PURCHASE * 100
+      percentage: DISCOUNT_RATES.BULK_PURCHASE * 100,
     });
   } else if (itemDiscounts.length > 0) {
-    itemDiscounts.forEach(item => {
-      const discountMessage = DISCOUNT_DISPLAY_MESSAGES.INDIVIDUAL_DISCOUNT
-        .replace('{productName}', item.name);
+    itemDiscounts.forEach((item) => {
+      const discountMessage = DISCOUNT_DISPLAY_MESSAGES.INDIVIDUAL_DISCOUNT.replace(
+        '{productName}',
+        item.name,
+      );
       messages.push({
         type: 'item',
         message: discountMessage,
-        percentage: item.discount
+        percentage: item.discount,
       });
     });
   }
-  
+
   if (isTuesdayDiscount) {
     messages.push({
       type: 'tuesday',
       message: DISCOUNT_DISPLAY_MESSAGES.TUESDAY_SPECIAL,
-      percentage: DISCOUNT_RATES.TUESDAY_SPECIAL * 100
+      percentage: DISCOUNT_RATES.TUESDAY_SPECIAL * 100,
     });
   }
-  
+
   return messages;
 };
 
@@ -194,13 +196,13 @@ export const generateDiscountMessages = (isBulkDiscount, itemDiscounts, isTuesda
 export const calculateTotalDiscount = (cartItemDetails, totalQuantity, date = new Date()) => {
   // 소계 계산
   const subtotal = cartItemDetails.reduce((sum, item) => sum + item.total, 0);
-  
+
   // 대량 구매 할인 확인
   const bulkDiscount = calculateBulkDiscount(totalQuantity, subtotal);
-  
+
   let finalAmount;
   let itemDiscountDetails = [];
-  
+
   if (bulkDiscount.applicable) {
     // 대량 구매 할인 적용 (개별 할인 무시)
     finalAmount = bulkDiscount.finalAmount;
@@ -210,14 +212,14 @@ export const calculateTotalDiscount = (cartItemDetails, totalQuantity, date = ne
     finalAmount = itemDiscountResult.totalAmount;
     itemDiscountDetails = itemDiscountResult.discountDetails;
   }
-  
+
   // 화요일 할인 적용
   const tuesdayDiscount = calculateTuesdayDiscount(finalAmount, date);
   finalAmount = tuesdayDiscount.finalAmount;
-  
+
   // 최종 할인 정보 계산
   const finalDiscountInfo = calculateFinalDiscount(subtotal, finalAmount);
-  
+
   return {
     subtotal,
     finalAmount,
@@ -229,7 +231,7 @@ export const calculateTotalDiscount = (cartItemDetails, totalQuantity, date = ne
     discountMessages: generateDiscountMessages(
       bulkDiscount.applicable,
       itemDiscountDetails,
-      tuesdayDiscount.applicable
-    )
+      tuesdayDiscount.applicable,
+    ),
   };
 };

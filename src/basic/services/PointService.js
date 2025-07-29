@@ -3,13 +3,7 @@
  * @fileoverview 기본 포인트, 화요일 2배 적립, 세트 보너스, 수량별 보너스 등을 계산합니다.
  */
 
-import {
-  PRODUCT_IDS,
-  POINTS,
-  QUANTITY_THRESHOLDS,
-  DAYS,
-  POINTS_MESSAGES
-} from '../constants.js';
+import { PRODUCT_IDS, POINTS, QUANTITY_THRESHOLDS, DAYS, POINTS_MESSAGES } from '../constants.js';
 
 /**
  * 구매 금액 기반 기본 포인트를 계산합니다.
@@ -28,17 +22,17 @@ export const calculateBasePoints = (totalAmount) => {
  */
 export const calculateTuesdayPoints = (basePoints, date = new Date()) => {
   const isTuesday = date.getDay() === DAYS.TUESDAY;
-  
+
   if (isTuesday && basePoints > 0) {
     return {
       points: basePoints * POINTS.TUESDAY_MULTIPLIER,
-      applicable: true
+      applicable: true,
     };
   }
-  
+
   return {
     points: basePoints,
-    applicable: false
+    applicable: false,
   };
 };
 
@@ -51,8 +45,8 @@ export const checkSetComposition = (cartItemDetails) => {
   let hasKeyboard = false;
   let hasMouse = false;
   let hasMonitorArm = false;
-  
-  cartItemDetails.forEach(item => {
+
+  cartItemDetails.forEach((item) => {
     switch (item.id) {
       case PRODUCT_IDS.KEYBOARD:
         hasKeyboard = true;
@@ -65,7 +59,7 @@ export const checkSetComposition = (cartItemDetails) => {
         break;
     }
   });
-  
+
   return { hasKeyboard, hasMouse, hasMonitorArm };
 };
 
@@ -78,19 +72,19 @@ export const calculateSetBonus = (setComposition) => {
   const { hasKeyboard, hasMouse, hasMonitorArm } = setComposition;
   let bonusPoints = 0;
   const details = [];
-  
+
   // 키보드+마우스 세트 보너스
   if (hasKeyboard && hasMouse) {
     bonusPoints += POINTS.COMBO_KEYBOARD_MOUSE;
     details.push(POINTS_MESSAGES.KEYBOARD_MOUSE_SET);
   }
-  
+
   // 풀세트 보너스 (키보드+마우스+모니터암)
   if (hasKeyboard && hasMouse && hasMonitorArm) {
     bonusPoints += POINTS.FULL_SET_BONUS;
     details.push(POINTS_MESSAGES.FULL_SET);
   }
-  
+
   return { points: bonusPoints, details };
 };
 
@@ -102,7 +96,7 @@ export const calculateSetBonus = (setComposition) => {
 export const calculateQuantityBonus = (totalQuantity) => {
   let bonusPoints = 0;
   const details = [];
-  
+
   if (totalQuantity >= QUANTITY_THRESHOLDS.TOTAL_BULK_MIN) {
     bonusPoints += POINTS.BULK_30_BONUS;
     details.push(POINTS_MESSAGES.BULK_30);
@@ -113,7 +107,7 @@ export const calculateQuantityBonus = (totalQuantity) => {
     bonusPoints += POINTS.BULK_10_BONUS;
     details.push(POINTS_MESSAGES.BULK_10);
   }
-  
+
   return { points: bonusPoints, details };
 };
 
@@ -125,10 +119,15 @@ export const calculateQuantityBonus = (totalQuantity) => {
  * @param {Date} date - 현재 날짜
  * @returns {Object} 종합 포인트 계산 결과
  */
-export const calculateTotalPoints = (totalAmount, cartItemDetails, totalQuantity, date = new Date()) => {
+export const calculateTotalPoints = (
+  totalAmount,
+  cartItemDetails,
+  totalQuantity,
+  date = new Date(),
+) => {
   // 기본 포인트 계산
   const basePoints = calculateBasePoints(totalAmount);
-  
+
   if (basePoints === 0 && cartItemDetails.length === 0) {
     return {
       totalPoints: 0,
@@ -138,38 +137,38 @@ export const calculateTotalPoints = (totalAmount, cartItemDetails, totalQuantity
         base: 0,
         tuesday: 0,
         setBonus: 0,
-        quantityBonus: 0
-      }
+        quantityBonus: 0,
+      },
     };
   }
-  
+
   const pointsDetails = [];
   let finalPoints = 0;
-  
+
   // 화요일 포인트 계산
   const tuesdayResult = calculateTuesdayPoints(basePoints, date);
   finalPoints = tuesdayResult.points;
-  
+
   if (basePoints > 0) {
     const baseMessage = POINTS_MESSAGES.BASE.replace('{points}', basePoints);
     pointsDetails.push(baseMessage);
-    
+
     if (tuesdayResult.applicable) {
       pointsDetails.push(POINTS_MESSAGES.TUESDAY_DOUBLE);
     }
   }
-  
+
   // 세트 구성 확인 및 보너스 계산
   const setComposition = checkSetComposition(cartItemDetails);
   const setBonus = calculateSetBonus(setComposition);
   finalPoints += setBonus.points;
   pointsDetails.push(...setBonus.details);
-  
+
   // 대량 구매 보너스 계산
   const quantityBonus = calculateQuantityBonus(totalQuantity);
   finalPoints += quantityBonus.points;
   pointsDetails.push(...quantityBonus.details);
-  
+
   return {
     totalPoints: finalPoints,
     basePoints,
@@ -178,8 +177,8 @@ export const calculateTotalPoints = (totalAmount, cartItemDetails, totalQuantity
       base: tuesdayResult.points,
       tuesday: tuesdayResult.applicable ? basePoints : 0,
       setBonus: setBonus.points,
-      quantityBonus: quantityBonus.points
-    }
+      quantityBonus: quantityBonus.points,
+    },
   };
 };
 
@@ -196,6 +195,6 @@ export const generatePointsDisplayHTML = (totalPoints, details) => {
       <div class="text-2xs opacity-70 mt-1">${details.join(', ')}</div>
     `;
   }
-  
+
   return '적립 포인트: 0p';
 };
