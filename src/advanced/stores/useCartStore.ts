@@ -9,9 +9,31 @@ import { createProductSlice, type ProductSlice } from './slices/productSlice';
 import { createCartSlice, type CartSlice } from './slices/cartSlice';
 import { createUISlice, type UISlice } from './slices/uiSlice';
 import { persist, createCartPersistConfig } from './middleware/persistMiddleware';
+import type { Product } from '../types/product.types';
+import { PRODUCT_INFO } from '../constants';
+
+/** React 컴포넌트 호환 인터페이스 */
+export interface ReactCompatibleStore {
+  // 계산된 상태들
+  products: Record<string, Product & { stock: number }>;
+  cartItems: Array<{ productId: string; quantity: number }>;
+  totalAmount: number;
+  loyaltyPoints: number;
+  discounts: Record<string, { label: string; amount: number }> | null;
+  isTuesdayDiscount: boolean;
+  stockStatus: Record<string, string>;
+
+  // 액션들
+  initializeProducts: () => void;
+  addToCart: (productId: string) => boolean;
+  removeFromCart: (productId: string) => void;
+  updateItemQuantity: (productId: string, quantity: number) => void;
+  updateStockStatus: () => void;
+  startTimers: () => void;
+}
 
 /** 전체 스토어 상태 타입 */
-export type CartStore = ProductSlice & CartSlice & UISlice;
+export type CartStore = ProductSlice & CartSlice & UISlice & ReactCompatibleStore;
 
 /** 스토어 DevTools 구성 */
 interface DevToolsConfig {
@@ -44,6 +66,120 @@ export const useCartStore = create<CartStore>()(
 
         // UI Slice
         ...createUISlice(...args),
+
+        // React 호환 계산된 상태들
+        get products() {
+          const [, get] = args;
+          const state = get();
+          const products: Record<string, Product & { stock: number }> = {};
+
+          state.products.forEach((product) => {
+            products[product.id] = {
+              id: product.id,
+              name: product.name,
+              price: product.val,
+              initialStock: product.q,
+              stock: product.q,
+            };
+          });
+
+          return products;
+        },
+
+        get cartItems() {
+          const [, get] = args;
+          const state = get();
+          return state.cart.items.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          }));
+        },
+
+        get totalAmount() {
+          const [, get] = args;
+          const state = get();
+          return state.cart.finalAmount;
+        },
+
+        get loyaltyPoints() {
+          const [, get] = args;
+          const state = get();
+          return state.cart.loyaltyPoints;
+        },
+
+        get discounts() {
+          const [, get] = args;
+          const state = get();
+          return state.lastCalculation?.discounts || null;
+        },
+
+        get isTuesdayDiscount() {
+          const today = new Date().getDay();
+          return today === 2; // 화요일
+        },
+
+        get stockStatus() {
+          const [, get] = args;
+          const state = get();
+          const status: Record<string, string> = {};
+
+          state.products.forEach((product) => {
+            if (product.q === 0) {
+              status[product.id] = 'out_of_stock';
+            } else if (product.q < 5) {
+              status[product.id] = 'low_stock';
+            } else {
+              status[product.id] = 'available';
+            }
+          });
+
+          return status;
+        },
+
+        // React 호환 액션들
+        initializeProducts: () => {
+          const [set] = args;
+          const productSlice = createProductSlice(...args);
+          productSlice.initializeProducts(PRODUCT_INFO);
+        },
+
+        addToCart: (productId: string) => {
+          const [set, get] = args;
+          const state = get();
+          const product = state.products.find((p) => p.id === productId);
+
+          if (!product || product.q <= 0) {
+            return false;
+          }
+
+          const cartSlice = createCartSlice(...args);
+          cartSlice.addToCart(productId as any);
+
+          // 재고 감소
+          const productSlice = createProductSlice(...args);
+          productSlice.updateProduct(productId as any, { q: product.q - 1 });
+
+          return true;
+        },
+
+        removeFromCart: (productId: string) => {
+          const cartSlice = createCartSlice(...args);
+          cartSlice.removeFromCart(productId as any);
+        },
+
+        updateItemQuantity: (productId: string, quantity: number) => {
+          const cartSlice = createCartSlice(...args);
+          cartSlice.updateCartItemQuantity(productId as any, quantity);
+        },
+
+        updateStockStatus: () => {
+          // 재고 상태는 계산된 상태이므로 별도 업데이트 불필요
+        },
+
+        startTimers: () => {
+          // 타이머 로직은 나중에 구현
+          console.log('타이머 시작됨');
+        },
       }),
       createCartPersistConfig('hanghae-cart-store'),
     ),
