@@ -24,6 +24,9 @@ export const findProductById = (products, productId) => {
  * @returns {string} 포맷팅된 가격 문자열 (예: "₩1,000")
  */
 export const formatPrice = (price) => {
+  if (typeof price !== 'number' || isNaN(price)) {
+    return '₩0';
+  }
   return `₩${price.toLocaleString()}`;
 };
 
