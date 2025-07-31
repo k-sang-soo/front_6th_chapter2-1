@@ -15,7 +15,6 @@ interface CartItemProps {
  */
 export const CartItem: React.FC<CartItemProps> = ({ item }) => {
   const { products, updateItemQuantity, removeFromCart } = useCartStore();
-  console.log('cartItem', products);
 
   const product = products[item.productId];
   if (!product) return null;
