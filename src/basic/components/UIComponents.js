@@ -13,19 +13,11 @@ import { generateDiscountLabel, generatePriceHTML } from '../utils/domUtils.js';
  */
 export const createHeader = () => {
   return `
-    <header class="bg-blue-600 text-white p-4" role="banner">
-      <h1 class="text-xs font-medium mb-1">
-        🛒 Hanghae Online Store
-      </h1>
-      <div class="text-5xl font-bold mb-2" role="heading" aria-level="2">
-        Shopping Cart
-      </div>
-      <p id="item-count" class="text-xs" 
-         aria-label="장바구니 아이템 수" 
-         aria-live="polite">
-        🛍️ 0 items in cart
-      </p>
-    </header>
+    <div class="mb-8">
+      <h1 class="text-xs font-medium tracking-extra-wide uppercase mb-2">🛒 Hanghae Online Store</h1>
+      <div class="text-5xl tracking-tight leading-none">Shopping Cart</div>
+      <p id="item-count" class="text-sm text-gray-500 font-normal mt-3">🛍️ 0 items in cart</p>
+    </div>
   `;
 };
 
@@ -36,25 +28,25 @@ export const createHeader = () => {
  */
 export const createProductSelector = () => {
   return `
-    <section class="bg-white p-4 rounded-lg shadow-sm mb-4" aria-label="상품 선택">
+    <div class="mb-6 pb-6 border-b border-gray-200">
       <select id="product-select" 
-              class="w-full border-2 border-gray-300 rounded-md p-2 mb-4 focus:border-blue-500 focus:outline-none"
+              class="w-full p-3 border border-gray-300 rounded-lg text-base mb-3"
               aria-label="구매할 상품을 선택하세요">
       </select>
       
       <button id="add-to-cart" 
-              class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:bg-gray-300 mb-4"
+              class="w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all"
               aria-label="선택한 상품을 장바구니에 추가"
               type="button">
-        장바구니에 추가
+        Add to Cart
       </button>
       
       <div id="stock-status" 
-           class="text-sm text-gray-600"
+           class="text-xs text-red-500 mt-3 whitespace-pre-line"
            aria-live="polite"
            aria-atomic="true">
       </div>
-    </section>
+    </div>
   `;
 };
 
@@ -171,13 +163,13 @@ export const createCartItemElement = (product, quantity) => {
   const priceHTML = generatePriceHTML(product);
 
   return `
-  <article id="${product.id}" 
-           class="flex items-center justify-between p-3 bg-white border-b border-gray-200 first:pt-0 last:border-b-0"
+  <div id="${product.id}" 
+           class="grid grid-cols-[80px_1fr_auto] gap-5 py-5 border-b border-gray-100 first:pt-0 last:border-b-0 last:pb-0"
            role="group"
            aria-label="${product.name} in cart">
     <!-- 상품 이미지 영역 -->
-    <div class="w-16 h-16 bg-gray-200 rounded-md mr-4">
-      <div class="w-full h-full bg-gradient-black rounded-md"></div>
+    <div class="w-20 h-20 bg-gradient-black relative overflow-hidden">
+      <div class="absolute top-1/2 left-1/2 w-[60%] h-[60%] bg-white/10 -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
     </div>
     
     <!-- 상품 정보 및 수량 조절 영역 -->
@@ -186,20 +178,20 @@ export const createCartItemElement = (product, quantity) => {
         ${discountLabel}${product.name}
       </h3>
       <p class="text-sm text-gray-600">개발자 도구</p>
-      <p class="text-xs text-black">${priceHTML}</p>
+      <p class="text-xs text-black mb-3">${priceHTML}</p>
       
       <!-- 수량 조절 버튼 그룹 -->
-      <div class="flex items-center mt-1" role="group" aria-label="수량 조절">
-        <button class="quantity-change bg-blue-500 text-white px-3 py-1 rounded-l-md hover:bg-blue-600" 
+      <div class="flex items-center gap-4" role="group" aria-label="수량 조절">
+        <button class="quantity-change w-6 h-6 border border-black bg-white text-sm flex items-center justify-center transition-all hover:bg-black hover:text-white" 
                 type="button"
                 data-product-id="${product.id}" 
                 data-change="-1"
                 aria-label="${product.name} 수량 감소">-</button>
-        <span class="quantity-number bg-gray-100 px-3 py-1 text-center text-gray-800 min-w-[3rem]" 
+        <span class="quantity-number text-sm font-normal min-w-[20px] text-center tabular-nums" 
               aria-label="Quantity: ${quantity}">
           ${quantity}
         </span>
-        <button class="quantity-change bg-blue-500 text-white px-3 py-1 rounded-r-md hover:bg-blue-600" 
+        <button class="quantity-change w-6 h-6 border border-black bg-white text-sm flex items-center justify-center transition-all hover:bg-black hover:text-white" 
                 type="button"
                 data-product-id="${product.id}" 
                 data-change="1"
@@ -209,13 +201,13 @@ export const createCartItemElement = (product, quantity) => {
     
     <!-- 가격 및 제거 버튼 영역 -->
     <div class="text-right">
-      <div class="text-lg font-bold text-gray-800">${priceHTML}</div>
-      <button class="remove-item text-red-500 hover:text-red-700 text-sm" 
+      <div class="text-lg mb-2 tracking-tight tabular-nums">${priceHTML}</div>
+      <button class="remove-item text-2xs text-gray-500 uppercase tracking-wider cursor-pointer transition-colors border-b border-transparent hover:text-black hover:border-black" 
               type="button"
               data-product-id="${product.id}"
-              aria-label="${product.name} 제거">제거</button>
+              aria-label="${product.name} 제거">REMOVE</button>
     </div>
-  </article>
+  </div>
   `;
 };
 
@@ -226,56 +218,35 @@ export const createCartItemElement = (product, quantity) => {
  */
 export const createOrderSummary = () => {
   return `
-  <aside class="w-80 bg-white p-6 rounded-lg shadow-sm" role="complementary" aria-label="주문 요약">
-    <h2 class="text-xl font-bold mb-4 text-gray-800">
-      주문요약
-    </h2>
-    
-    <div class="flex flex-col h-96">
-      <!-- 주문 상세 내역 영역 -->
-      <div id="summary-details" class="space-y-1 text-sm text-gray-600 flex-1 overflow-y-auto"></div>
-      
+  <div class="h-full bg-black text-white p-8 flex flex-col">
+    <h2 class="text-xs font-medium mb-5 tracking-extra-wide uppercase">Order Summary</h2>
+    <div class="flex-1 flex flex-col">
+      <div id="summary-details" class="space-y-3"></div>
       <div class="mt-auto">
-        <!-- 할인 정보 영역 -->
-        <div id="discount-info" class="text-sm text-green-600 space-y-1 mb-4"></div>
-        
-        <!-- 총 결제 금액 영역 -->
-        <div id="cart-total" class="border-t border-gray-200 pt-3">
-          <div class="flex justify-between items-center">
-            <span class="text-lg font-bold text-gray-800">총액</span>
-            <div id="total-amount-display" class="text-xl font-bold text-blue-600" 
-                 aria-label="총 결제 금액">₩0</div>
+        <div id="discount-info" class="mb-4"></div>
+        <div id="cart-total" class="pt-5 border-t border-white/10">
+          <div class="flex justify-between items-baseline">
+            <span class="text-sm uppercase tracking-wider">Total</span>
+            <div id="total-amount-display" class="text-2xl tracking-tight">₩0</div>
           </div>
-          <div id="loyalty-points" 
-               class="text-sm text-blue-600 mt-1"
-               aria-label="적립 포인트">
-            적립 포인트: 0p
-          </div>
+          <div id="loyalty-points" class="text-xs text-blue-400 mt-2 text-right">적립 포인트: 0p</div>
         </div>
-        
-        <!-- 화요일 특별 할인 알림 -->
-        <div id="tuesday-special" class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs hidden">
+        <div id="tuesday-special" class="mt-4 p-3 bg-white/10 rounded-lg hidden">
           <div class="flex items-center gap-2">
             <span class="text-2xs">🎉</span>
-            <span class="text-xs uppercase tracking-wide">화요일 특별 할인!</span>
+            <span class="text-xs uppercase tracking-wide">Tuesday Special 10% Applied</span>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- 체크아웃 버튼 -->
-    <button class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold mt-4 hover:bg-blue-700 disabled:bg-gray-300"
-            type="button"
-            aria-label="결제하기">
-      주문하기
+    <button class="w-full py-4 bg-white text-black text-sm font-normal uppercase tracking-super-wide cursor-pointer mt-6 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/30">
+      Proceed to Checkout
     </button>
-    
-    <!-- 추가 정보 -->
-    <p class="text-xs text-gray-500 mt-3 leading-relaxed">
-      50,000원 이상 구매 시 무료배송<br>
-      <span id="points-notice">구매 시 포인트를 적립해드립니다.</span>
+    <p class="mt-4 text-2xs text-white/60 text-center leading-relaxed">
+      Free shipping on all orders.<br>
+      <span id="points-notice">Earn loyalty points with purchase.</span>
     </p>
-  </aside>
+  </div>
   `;
 };
 

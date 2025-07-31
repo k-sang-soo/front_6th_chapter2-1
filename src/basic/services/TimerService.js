@@ -268,10 +268,7 @@ const processLightningSale = (products, stateManager) => {
 
   const updatedProduct = applyLightningSale(selectedProduct);
 
-  // 성공 시 일정 시간 후 세일 상태 해제 (자동 정리)
-  setTimeout(() => {
-    stateManager.unregisterSale(selectedProduct.id, 'lightning');
-  }, TIMERS.LIGHTNING_SALE_INTERVAL * 2);
+  // 번개세일은 영구적으로 유지됨 (원본 동작과 일치)
 
   return {
     success: true,
@@ -310,10 +307,7 @@ const processSuggestionSale = (products, getLastSelectedProduct, isCartEmpty, st
 
   const updatedProduct = applySuggestionSale(suggestedProduct);
 
-  // 성공 시 일정 시간 후 세일 상태 해제 (자동 정리)
-  setTimeout(() => {
-    stateManager.unregisterSale(suggestedProduct.id, 'suggestion');
-  }, TIMERS.SUGGESTION_SALE_INTERVAL * 2);
+  // 추천세일은 영구적으로 유지됨 (원본 동작과 일치)
 
   return {
     success: true,
@@ -445,33 +439,33 @@ export const findSuggestionProduct = (products, lastSelectedProductId) => {
 };
 
 /**
- * 상품에 번개세일을 적용합니다.
+ * 상품에 번개세일을 적용합니다 (원본 객체 직접 수정).
  * @param {Object} product - 할인을 적용할 상품 객체
- * @returns {Object} 할인이 적용된 상품 객체
+ * @returns {Object} 수정된 상품 객체 (참조용)
  */
 export const applyLightningSale = (product) => {
   const discountedPrice = Math.round(product.originalVal * (1 - DISCOUNT_RATES.LIGHTNING_SALE));
 
-  return {
-    ...product,
-    val: discountedPrice,
-    onSale: true,
-  };
+  // 원본 객체를 직접 수정 (원본 동작과 일치)
+  product.val = discountedPrice;
+  product.onSale = true;
+
+  return product;
 };
 
 /**
- * 상품에 추천할인을 적용합니다.
+ * 상품에 추천할인을 적용합니다 (원본 객체 직접 수정).
  * @param {Object} product - 할인을 적용할 상품 객체
- * @returns {Object} 할인이 적용된 상품 객체
+ * @returns {Object} 수정된 상품 객체 (참조용)
  */
 export const applySuggestionSale = (product) => {
   const discountedPrice = Math.round(product.val * (1 - DISCOUNT_RATES.SUGGESTION_SALE));
 
-  return {
-    ...product,
-    val: discountedPrice,
-    suggestSale: true,
-  };
+  // 원본 객체를 직접 수정 (원본 동작과 일치)
+  product.val = discountedPrice;
+  product.suggestSale = true;
+
+  return product;
 };
 
 /**

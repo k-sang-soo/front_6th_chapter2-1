@@ -41,15 +41,16 @@ export function initializeMainDOM(rootElement) {
 
   // 메인 그리드 컨테이너 생성
   gridContainer = document.createElement('div');
-  gridContainer.className = 'container mx-auto p-4 flex gap-6';
+  gridContainer.className =
+    'grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 flex-1 overflow-hidden';
 
   // 좌측 열 생성
   leftColumn = document.createElement('div');
-  leftColumn.className = 'w-1/2 p-4';
+  leftColumn.className = 'bg-white border border-gray-200 p-8 overflow-y-auto';
   leftColumn.appendChild(selectorContainer);
 
   // 장바구니 표시 영역 생성
-  const cartDisplayArea = document.createElement('section');
+  const cartDisplayArea = document.createElement('div');
   cartDisplayArea.id = 'cart-items';
   cartDisplayArea.setAttribute('aria-label', 'Shopping cart items');
   cartDisplayArea.setAttribute('aria-live', 'polite');

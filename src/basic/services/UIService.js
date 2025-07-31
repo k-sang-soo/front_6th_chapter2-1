@@ -98,43 +98,34 @@ function updateItemCountDisplay(totalItemCount) {
  * @param {number} subtotal - 소계
  * @param {Object} discountResult - 할인 계산 결과
  */
-function updateOrderSummaryDisplay(cartItemDetails, subtotal, discountResult) {
+function updateOrderSummaryDisplay(cartItemDetails, subtotal) {
   const summaryDetails = document.getElementById('summary-details');
   summaryDetails.innerHTML = '';
 
   if (subtotal > 0) {
-    // 주문 요약 상세 항목 생성
+    // 주문 요약 상세 항목 생성 (Original 스타일로)
     const itemDetailsHTML = cartItemDetails
       .map(
-        (item) => `<div class="flex justify-between items-center text-sm text-gray-600">
-        <span class="flex-1">${item.name} x ${item.quantity}</span>
-        <span class="font-medium text-gray-800">${formatPrice(item.totalPrice)}</span>
+        (item) => `<div class="flex justify-between text-sm text-white">
+        <span>${item.name} x ${item.quantity}</span>
+        <span>${formatPrice(item.total)}</span>
       </div>`,
       )
       .join('');
 
-    summaryDetails.innerHTML += itemDetailsHTML;
-    summaryDetails.innerHTML += '<div class="border-t border-gray-200 my-2"></div>';
-    summaryDetails.innerHTML += `<div class="flex justify-between items-center text-sm tracking-wide">
-      <span>소계</span>
-      <span>${formatPrice(subtotal)}</span>
-    </div>`;
+    // Subtotal과 Shipping 정보 추가
+    const summaryFooterHTML = `
+      <div class="flex justify-between text-sm text-white/70 pt-2">
+        <span>Subtotal</span>
+        <span>${formatPrice(subtotal)}</span>
+      </div>
+      <div class="flex justify-between text-sm text-white/70">
+        <span>Shipping</span>
+        <span>Free</span>
+      </div>
+    `;
 
-    // 할인 내역 표시
-    const discountHTML = discountResult.discountMessages
-      .map(
-        (discount) => `<div class="flex justify-between items-center text-sm text-green-600">
-        <span>${discount.label}</span>
-        <span>-${formatPrice(discount.amount)}</span>
-      </div>`,
-      )
-      .join('');
-
-    summaryDetails.innerHTML += discountHTML;
-    summaryDetails.innerHTML += `<div class="flex justify-between items-center text-sm tracking-wide text-gray-400">
-      <span>배송</span>
-      <span>무료</span>
-    </div>`;
+    summaryDetails.innerHTML = itemDetailsHTML + summaryFooterHTML;
   }
 }
 
@@ -248,11 +239,7 @@ function updateCartUI(calculationResult) {
  * @param {Object} calculationResult - 계산 결과
  */
 function updateOrderSummarySection(calculationResult) {
-  updateOrderSummaryDisplay(
-    calculationResult.cartItemDetails,
-    calculationResult.subtotal,
-    calculationResult.discountResult,
-  );
+  updateOrderSummaryDisplay(calculationResult.cartItemDetails, calculationResult.subtotal);
   updateTotalAmountDisplay(calculationResult.totalAmount);
 }
 
