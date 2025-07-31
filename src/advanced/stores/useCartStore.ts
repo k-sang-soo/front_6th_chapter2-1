@@ -266,6 +266,7 @@ export const useCartStore = create<SimpleCartStore>()(
 
           // 재고 확인
           if (newQuantity > availableStock) {
+            alert('재고가 부족합니다.');
             return; // 재고 부족
           }
 
