@@ -1,0 +1,9 @@
+{
+  "language": "ko",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm start:*)"
+    ],
+    "deny": []
+  }
+}
