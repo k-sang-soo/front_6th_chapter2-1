@@ -54,7 +54,7 @@ export const HelpModal: React.FC = () => {
       {/* 도움말 토글 버튼 */}
       <button
         onClick={toggleModal}
-        className="fixed top-4 right-4 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 z-10"
+        className="fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50"
         aria-label="도움말 열기"
         aria-expanded={isOpen}
         aria-controls="help-modal-panel"
