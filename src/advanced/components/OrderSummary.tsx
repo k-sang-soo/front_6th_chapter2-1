@@ -13,10 +13,11 @@ export const OrderSummary: React.FC = () => {
     pointDetails,
     discounts,
     isTuesdayDiscount,
+    totalQuantity,
+    subtotal,
   } = useCartStore();
 
   const hasItems = cartItems.length > 0;
-  const _totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   /**
    * 할인 정보 렌더링
@@ -36,6 +37,36 @@ export const OrderSummary: React.FC = () => {
   };
 
   /**
+   * 대량 구매 할인 안내 메시지 렌더링
+   */
+  const _renderBulkDiscountInfo = () => {
+    if (!hasItems) return null;
+
+    const isEligibleForBulk = totalQuantity >= 30;
+    const isEligibleForIndividual = cartItems.some((item) => item.quantity >= 10);
+
+    // 이미 대량 할인이 적용된 경우는 표시하지 않음
+    if (isEligibleForBulk && discounts.some((d) => d.type === 'bulk')) return null;
+    if (isEligibleForIndividual && discounts.some((d) => d.type === 'item')) return null;
+
+    return (
+      <div className="text-2xs text-white/50 space-y-1 mb-3">
+        {!isEligibleForBulk && <div>💡 {30 - totalQuantity}개 더 담으면 전체 15% 할인!</div>}
+        {cartItems.map((item) => {
+          const product = products[item.productId];
+          if (!product || item.quantity >= 10) return null;
+
+          return (
+            <div key={item.productId}>
+              💡 {product.name} {10 - item.quantity}개 더 담으면 개별 할인!
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  /**
    * 주문 상세 내역 렌더링
    */
   const renderSummaryDetails = () => {
@@ -50,7 +81,10 @@ export const OrderSummary: React.FC = () => {
           if (!product) return null;
 
           return (
-            <div key={item.productId} className="flex justify-between text-sm text-white">
+            <div
+              key={item.productId}
+              className="flex justify-between text-xs tracking-wide text-gray-400"
+            >
               <span>
                 {product.name} x {item.quantity}
               </span>
@@ -58,18 +92,12 @@ export const OrderSummary: React.FC = () => {
             </div>
           );
         })}
-        <div className="flex justify-between text-sm text-white/70 pt-2">
+        <div className="border-t border-white/10 my-3"></div>
+        <div className="flex justify-between text-sm tracking-wide">
           <span>Subtotal</span>
-          <span>
-            ₩
-            {cartItems
-              .reduce((sum, item) => {
-                const product = products[item.productId];
-                return sum + (product ? product.price * item.quantity : 0);
-              }, 0)
-              .toLocaleString()}
-          </span>
+          <span>₩{subtotal.toLocaleString()}</span>
         </div>
+        {/*{_renderBulkDiscountInfo()}*/}
         <div className="flex justify-between text-sm text-white/70">
           <span>Shipping</span>
           <span>Free</span>
@@ -86,7 +114,9 @@ export const OrderSummary: React.FC = () => {
           {renderSummaryDetails()}
         </div>
         <div className="mt-auto">
-          <div id="discount-info" className="mb-4"></div>
+          <div id="discount-info" className="mb-4">
+            {_renderDiscountInfo()}
+          </div>
           <div id="cart-total" className="pt-5 border-t border-white/10">
             <div className="flex justify-between items-baseline">
               <span className="text-sm uppercase tracking-wider">Total</span>
