@@ -11,6 +11,7 @@
     "format:fix": "prettier --write --list-different .",
     "build": "vite build",
     "preview": "vite preview",
+    "start:original": "vite serve --open ./index.original.html",
     "start:basic": "vite serve --open ./index.basic.html",
     "start:advanced": "vite serve --open index.html",
     "test": "vitest",
