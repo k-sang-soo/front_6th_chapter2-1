@@ -84,9 +84,36 @@ export const ProductSelector: React.FC = () => {
           const isProductOutOfStock = product.stock === 0;
           const stockInfo = isProductOutOfStock ? ' (품절)' : '';
 
+          // 할인 아이콘 및 텍스트 생성
+          let discountIcon = '';
+          let priceDisplay = `₩${product.price.toLocaleString()}`;
+          let saleLabel = '';
+
+          if (product.onSale && product.suggestSale) {
+            // 번개세일 + 추천할인 (25% SUPER SALE)
+            discountIcon = '⚡💝 ';
+            const originalPrice = product.originalVal || product.price;
+            priceDisplay = `₩${originalPrice.toLocaleString()} → ₩${product.price.toLocaleString()}`;
+            saleLabel = ' (25% SUPER SALE!)';
+          } else if (product.onSale) {
+            // 번개세일만 (20% SALE)
+            discountIcon = '⚡ ';
+            const originalPrice = product.originalVal || product.price;
+            priceDisplay = `₩${originalPrice.toLocaleString()} → ₩${product.price.toLocaleString()}`;
+            saleLabel = ' (20% SALE!)';
+          } else if (product.suggestSale) {
+            // 추천할인만 (5% SALE)
+            discountIcon = '💝 ';
+            const originalPrice = product.originalVal || product.price;
+            priceDisplay = `₩${originalPrice.toLocaleString()} → ₩${product.price.toLocaleString()}`;
+            saleLabel = ' (5% 추천할인!)';
+          }
+
           return (
             <option key={product.id} value={product.id} disabled={isProductOutOfStock}>
-              {product.name} - ₩{product.price.toLocaleString()}
+              {discountIcon}
+              {product.name} - {priceDisplay}
+              {saleLabel}
               {stockInfo}
             </option>
           );
