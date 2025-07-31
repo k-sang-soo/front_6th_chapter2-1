@@ -27,7 +27,7 @@ export interface Product {
 /** 상품 재고 상태 */
 export interface ProductStock {
   /** 상품 ID */
-  id: ProductId;
+  id: string;
   /** 현재 재고 수량 */
   currentStock: number;
   /** 초기 재고 수량 */

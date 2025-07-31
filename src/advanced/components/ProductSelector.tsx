@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useCartStore } from '../stores';
+import { QUANTITY_THRESHOLDS } from '../constants';
 
 /**
  * 상품 선택 컴포넌트
@@ -9,6 +10,21 @@ export const ProductSelector: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
 
   const { products, addToCart, initializeProducts, updateStockStatus } = useCartStore();
+
+  // 반응형 재고 경고 계산
+  const stockWarnings = useMemo(() => {
+    const warnings: string[] = [];
+    Object.values(products).forEach((product) => {
+      if (product.stock < QUANTITY_THRESHOLDS.LOW_STOCK_WARNING) {
+        if (product.stock === 0) {
+          warnings.push(`${product.name}: 품절`);
+        } else {
+          warnings.push(`${product.name}: 재고 부족 (${product.stock}개 남음)`);
+        }
+      }
+    });
+    return warnings;
+  }, [products]);
 
   // 컴포넌트 마운트 시 상품 초기화
   useEffect(() => {
@@ -48,19 +64,10 @@ export const ProductSelector: React.FC = () => {
   const isAddButtonDisabled = !selectedProductId || isOutOfStock;
 
   /**
-   * 재고 상태 메시지 생성
+   * 재고 상태 메시지 생성 (전체 상품 대상)
    */
   const getStockStatusMessage = () => {
-    if (!selectedProduct) return '';
-
-    const { stock, name } = selectedProduct;
-    if (stock === 0) {
-      return `❌ ${name} - 품절`;
-    } else if (stock < 5) {
-      return `⚠️ ${name} - 재고 부족 (${stock}개 남음)`;
-    } else {
-      return `✅ ${name} - 재고 충분 (${stock}개)`;
-    }
+    return stockWarnings.join('\n');
   };
 
   return (
