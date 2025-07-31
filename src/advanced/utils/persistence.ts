@@ -74,7 +74,7 @@ export const clearStorage = (key: string): void => {
 /**
  * 장바구니 전용 영속화 상태 선택
  */
-export const selectCartPersistState = <T extends Record<string, unknown>>(state: T) => {
+export const selectCartPersistState = <T extends { timerState: unknown }>(state: T) => {
   // UI나 타이머는 영속화하지 않고, 핵심 데이터만 저장
   const { timerState: _timerState, ...persistableState } = state;
 
