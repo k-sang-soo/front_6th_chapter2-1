@@ -35,12 +35,21 @@ interface TimerState {
   };
 }
 
+interface PointDetails {
+  base: number;
+  tuesday: boolean;
+  setBonus: string;
+  quantityBonus: string;
+  breakdown: string[];
+}
+
 interface SimpleCartStore {
   // 상태
   products: Record<string, Product & { stock: number }>;
   cartItems: CartItem[];
   totalAmount: number;
   loyaltyPoints: number;
+  pointDetails: PointDetails;
   discounts: DiscountInfo[];
   stockStatus: Record<string, string>;
   timerState: TimerState;
@@ -77,6 +86,13 @@ const getInitialState = () => ({
   cartItems: [],
   totalAmount: 0,
   loyaltyPoints: 0,
+  pointDetails: {
+    base: 0,
+    tuesday: false,
+    setBonus: '',
+    quantityBonus: '',
+    breakdown: [],
+  },
   discounts: [],
   stockStatus: {},
   timerState: {
@@ -139,6 +155,9 @@ export const useCartStore = create<SimpleCartStore>()(
             products[product.id] = {
               ...product,
               stock: product.initialStock,
+              originalVal: product.price, // 원래 가격 저장
+              onSale: false, // 번개세일 초기화
+              suggestSale: false, // 추천세일 초기화
             };
 
             if (product.initialStock === 0) {
@@ -277,7 +296,18 @@ export const useCartStore = create<SimpleCartStore>()(
         calculateTotals: () => {
           const state = get();
           if (state.cartItems.length === 0) {
-            setWithPersist({ totalAmount: 0, loyaltyPoints: 0, discounts: [] });
+            setWithPersist({
+              totalAmount: 0,
+              loyaltyPoints: 0,
+              pointDetails: {
+                base: 0,
+                tuesday: false,
+                setBonus: '',
+                quantityBonus: '',
+                breakdown: [],
+              },
+              discounts: [],
+            });
             return;
           }
 
@@ -384,36 +414,65 @@ export const useCartStore = create<SimpleCartStore>()(
           }
 
           // 포인트 계산
-          let loyaltyPoints = Math.floor(finalAmount * POINTS.BASE_RATE);
+          const basePoints = Math.floor(finalAmount * POINTS.BASE_RATE);
+          let loyaltyPoints = basePoints;
+          const breakdown: string[] = [];
+
+          if (basePoints > 0) {
+            breakdown.push(`기본 적립: ${basePoints}p`);
+          }
 
           // 화요일 2배 적립
-          if (state.isTuesdayDiscount) {
+          const isTuesday = state.isTuesdayDiscount;
+          if (isTuesday) {
             loyaltyPoints *= 2;
+            breakdown.push('화요일 2배 적립');
           }
 
           // 수량 보너스
+          let quantityBonus = '';
           if (totalQuantity >= 30) {
             loyaltyPoints += POINTS.QUANTITY_BONUS.THIRTY_PLUS;
+            quantityBonus = '30개 이상 보너스';
+            breakdown.push(`${quantityBonus}: +${POINTS.QUANTITY_BONUS.THIRTY_PLUS}p`);
           } else if (totalQuantity >= 20) {
             loyaltyPoints += POINTS.QUANTITY_BONUS.TWENTY_PLUS;
+            quantityBonus = '20개 이상 보너스';
+            breakdown.push(`${quantityBonus}: +${POINTS.QUANTITY_BONUS.TWENTY_PLUS}p`);
           } else if (totalQuantity >= 10) {
             loyaltyPoints += POINTS.QUANTITY_BONUS.TEN_PLUS;
+            quantityBonus = '10개 이상 보너스';
+            breakdown.push(`${quantityBonus}: +${POINTS.QUANTITY_BONUS.TEN_PLUS}p`);
           }
 
           // 세트 보너스 계산
           const hasKeyboard = state.cartItems.some((item) => item.productId === 'p1');
           const hasMouse = state.cartItems.some((item) => item.productId === 'p2');
           const hasAll = state.cartItems.length >= 5;
+          let setBonus = '';
 
           if (hasAll) {
             loyaltyPoints += POINTS.SET_BONUS.FULL_SET;
+            setBonus = '풀세트 보너스';
+            breakdown.push(`${setBonus}: +${POINTS.SET_BONUS.FULL_SET}p`);
           } else if (hasKeyboard && hasMouse) {
             loyaltyPoints += POINTS.SET_BONUS.KEYBOARD_MOUSE;
+            setBonus = '키보드+마우스 보너스';
+            breakdown.push(`${setBonus}: +${POINTS.SET_BONUS.KEYBOARD_MOUSE}p`);
           }
+
+          const pointDetails: PointDetails = {
+            base: basePoints,
+            tuesday: isTuesday,
+            setBonus,
+            quantityBonus,
+            breakdown,
+          };
 
           setWithPersist({
             totalAmount: Math.round(finalAmount),
             loyaltyPoints,
+            pointDetails,
             discounts,
           });
         },
@@ -441,15 +500,29 @@ export const useCartStore = create<SimpleCartStore>()(
             const delay = Math.random() * 15000 + 15000; // 15-30초
             const timer = setTimeout(() => {
               const state = get();
+              // 장바구니에 아이템이 있고 마지막 선택 상품이 있을 때만 추천세일 시작
               if (state.cartItems.length > 0) {
-                const productIds = ['p1', 'p2', 'p3', 'p4', 'p5'];
-                const availableProducts = productIds.filter(
-                  (id) => !state.cartItems.some((item) => item.productId === id),
-                );
-                if (availableProducts.length > 0) {
-                  const randomProduct =
-                    availableProducts[Math.floor(Math.random() * availableProducts.length)];
-                  get().applySuggestionSale(randomProduct);
+                // 마지막에 추가된 상품 ID 찾기 (가장 최근 추가된 아이템)
+                const lastAddedItem = state.cartItems[state.cartItems.length - 1];
+                const lastSelectedProductId = lastAddedItem?.productId;
+
+                if (lastSelectedProductId) {
+                  const productIds = ['p1', 'p2', 'p3', 'p4', 'p5'];
+                  const availableProducts = productIds.filter((id) => {
+                    const product = state.products[id];
+                    return (
+                      id !== lastSelectedProductId && // 마지막 선택 상품이 아니고
+                      product &&
+                      product.stock > 0 && // 재고가 있고
+                      !product.suggestSale
+                    ); // 아직 추천세일 중이 아닌 상품
+                  });
+
+                  if (availableProducts.length > 0) {
+                    const randomProduct =
+                      availableProducts[Math.floor(Math.random() * availableProducts.length)];
+                    get().applySuggestionSale(randomProduct);
+                  }
                 }
               }
               startSuggestionSale(); // 재귀 호출로 반복
@@ -474,8 +547,19 @@ export const useCartStore = create<SimpleCartStore>()(
           if (!product) return;
 
           const discountRate = 0.2; // 20% 할인
+          const discountedPrice = Math.round(product.originalVal! * (1 - discountRate));
 
-          set((state) => ({
+          // 원본 객체를 직접 수정 (원본 동작과 일치)
+          product.price = discountedPrice;
+          product.onSale = true;
+
+          const updatedProducts = {
+            ...state.products,
+            [productId]: product,
+          };
+
+          setWithPersist({
+            products: updatedProducts,
             timerState: {
               ...state.timerState,
               activeDiscounts: {
@@ -483,21 +567,9 @@ export const useCartStore = create<SimpleCartStore>()(
                 lightning: { productId, discountRate },
               },
             },
-          }));
+          });
 
-          // 5초 후 해제
-          setTimeout(() => {
-            set((state) => {
-              const { lightning: _lightning, ...rest } = state.timerState.activeDiscounts;
-              return {
-                timerState: {
-                  ...state.timerState,
-                  activeDiscounts: rest,
-                },
-              };
-            });
-            get().calculateTotals();
-          }, 5000);
+          // 번개세일은 영구적으로 유지됨 (원본 동작과 일치)
 
           get().calculateTotals();
 
@@ -514,8 +586,19 @@ export const useCartStore = create<SimpleCartStore>()(
           if (!product) return;
 
           const discountRate = 0.05; // 5% 할인
+          const discountedPrice = Math.round(product.originalVal! * (1 - discountRate));
 
-          set((state) => ({
+          // 원본 객체를 직접 수정 (원본 동작과 일치)
+          product.price = discountedPrice;
+          product.suggestSale = true;
+
+          const updatedProducts = {
+            ...state.products,
+            [productId]: product,
+          };
+
+          setWithPersist({
+            products: updatedProducts,
             timerState: {
               ...state.timerState,
               activeDiscounts: {
@@ -523,21 +606,9 @@ export const useCartStore = create<SimpleCartStore>()(
                 suggestion: { productId, discountRate },
               },
             },
-          }));
+          });
 
-          // 5초 후 해제
-          setTimeout(() => {
-            set((state) => {
-              const { suggestion: _suggestion, ...rest } = state.timerState.activeDiscounts;
-              return {
-                timerState: {
-                  ...state.timerState,
-                  activeDiscounts: rest,
-                },
-              };
-            });
-            get().calculateTotals();
-          }, 5000);
+          // 추천세일은 영구적으로 유지됨 (원본 동작과 일치)
 
           get().calculateTotals();
 

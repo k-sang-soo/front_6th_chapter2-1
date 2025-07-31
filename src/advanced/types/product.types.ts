@@ -16,6 +16,12 @@ export interface Product {
   price: number;
   /** 초기 재고 수량 */
   initialStock: number;
+  /** 원래 가격 (할인 전) */
+  originalVal?: number;
+  /** 번개세일 상태 */
+  onSale?: boolean;
+  /** 추천세일 상태 */
+  suggestSale?: boolean;
 }
 
 /** 상품 재고 상태 */
