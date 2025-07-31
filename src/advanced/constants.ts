@@ -78,7 +78,7 @@ export const INDIVIDUAL_DISCOUNT_RATES: Record<ProductId, number> = {
 export const QUANTITY_THRESHOLDS = {
   BULK_DISCOUNT_MIN: 10, // 개별 상품 대량 할인 최소 수량
   TOTAL_BULK_MIN: 30, // 전체 대량 할인 최소 수량
-  LOW_STOCK_WARNING: 5, // 재고 부족 경고 임계값
+  LOW_STOCK_WARNING: 4, // 재고 부족 경고 임계값 (4개 이하일 때)
   STOCK_WARNING_THRESHOLD: 50, // 전체 재고 경고 임계값
 } as const;
 
