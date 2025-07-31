@@ -19,7 +19,6 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
 
   const product = products[item.productId];
   if (!product) return null;
-  const isQuantityAtMax = item.quantity >= product.initialStock;
 
   /**
    * 수량 변경 핸들러
@@ -116,7 +115,6 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
             data-product-id={item.productId}
             data-change="1"
             onClick={() => handleQuantityChange(1)}
-            disabled={isQuantityAtMax}
             aria-label={`${product.name} 수량 증가`}
           >
             +
