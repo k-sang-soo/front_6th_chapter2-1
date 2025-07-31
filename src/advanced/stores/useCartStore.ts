@@ -7,21 +7,13 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Product } from '@/advanced/types';
 import {
-  PRODUCT_INFO,
-  DISCOUNT_RATES,
-  QUANTITY_THRESHOLDS,
   DISCOUNT_DISPLAY_MESSAGES,
+  DISCOUNT_RATES,
   POINTS,
+  PRODUCT_INFO,
+  QUANTITY_THRESHOLDS,
 } from '../constants';
-import { saveToStorage, loadFromStorage, selectCartPersistState } from '../utils/persistence';
-
-// StoreProduct 인터페이스 추가
-interface StoreProduct extends Product {
-  stock: number;
-  originalVal: number;
-  onSale: boolean;
-  suggestSale: boolean;
-}
+import { loadFromStorage, saveToStorage, selectCartPersistState } from '../utils/persistence';
 
 interface CartItem {
   productId: string;
@@ -53,7 +45,7 @@ interface PointDetails {
 
 interface SimpleCartStore {
   // 상태
-  products: Record<string, StoreProduct>; // StoreProduct 타입 사용
+  products: Record<string, Product & { stock: number }>;
   cartItems: CartItem[];
   totalAmount: number;
   loyaltyPoints: number;
@@ -156,13 +148,21 @@ export const useCartStore = create<SimpleCartStore>()(
 
         // 상품 초기화
         initializeProducts: () => {
-          const products: Record<string, StoreProduct> = {}; // StoreProduct 타입 사용
+          const state = get();
+
+          // 이미 products가 존재하면 초기화하지 않음 (복원된 상태 보존)
+          if (Object.keys(state.products).length > 0) {
+            return;
+          }
+
+          const products: Record<string, Product & { stock: number }> = {};
           const stockStatus: Record<string, string> = {};
 
           PRODUCT_INFO.forEach((product) => {
             products[product.id] = {
               ...product,
               stock: product.initialStock,
+              initialStock: product.initialStock, // UI에서 사용할 원본 재고
               originalVal: product.price, // 원래 가격 저장
               onSale: false, // 번개세일 초기화
               suggestSale: false, // 추천세일 초기화
@@ -170,7 +170,7 @@ export const useCartStore = create<SimpleCartStore>()(
 
             if (product.initialStock === 0) {
               stockStatus[product.id] = 'out_of_stock';
-            } else if (product.initialStock <= QUANTITY_THRESHOLDS.LOW_STOCK_WARNING) {
+            } else if (product.initialStock < QUANTITY_THRESHOLDS.LOW_STOCK_WARNING) {
               stockStatus[product.id] = 'low_stock';
             } else {
               stockStatus[product.id] = 'available';
@@ -193,9 +193,7 @@ export const useCartStore = create<SimpleCartStore>()(
           }
 
           if (product.stock <= 0) {
-            if (typeof window !== 'undefined') {
-              alert(`${product.name}은(는) 품절되었습니다.`);
-            }
+            alert(`${product.name}은(는) 품절되었습니다.`);
             return false;
           }
 
@@ -225,15 +223,6 @@ export const useCartStore = create<SimpleCartStore>()(
           setWithPersist({ cartItems: newCartItems, products: newProducts });
           get().calculateTotals();
           get().updateStockStatus();
-
-          // 재고 부족 경고
-          const newStock = product.stock - 1;
-          if (newStock <= QUANTITY_THRESHOLDS.LOW_STOCK_WARNING && newStock > 0) {
-            if (typeof window !== 'undefined') {
-              alert(`⚠️ ${product.name}의 재고가 ${newStock}개 남았습니다!`);
-            }
-          }
-
           return true;
         },
 
@@ -271,8 +260,12 @@ export const useCartStore = create<SimpleCartStore>()(
           const product = state.products[productId];
           const quantityDiff = newQuantity - existingItem.quantity;
 
+          // 사용가능 재고 계산 (초기재고 - 현재 장바구니 수량)
+          const currentCartQuantity = existingItem.quantity;
+          const availableStock = product.stock + currentCartQuantity;
+
           // 재고 확인
-          if (quantityDiff > 0 && product.stock < quantityDiff) {
+          if (newQuantity > availableStock) {
             return; // 재고 부족
           }
 
@@ -287,7 +280,7 @@ export const useCartStore = create<SimpleCartStore>()(
             item.productId === productId ? { ...item, quantity: newQuantity } : item,
           );
 
-          // 재고 업데이트
+          // 재고 업데이트 (현재 stock에서 차이만큼 조정)
           const newProducts = {
             ...state.products,
             [productId]: {
@@ -309,7 +302,7 @@ export const useCartStore = create<SimpleCartStore>()(
           Object.values(state.products).forEach((product) => {
             if (product.stock === 0) {
               stockStatus[product.id] = 'out_of_stock';
-            } else if (product.stock <= QUANTITY_THRESHOLDS.LOW_STOCK_WARNING) {
+            } else if (product.stock < QUANTITY_THRESHOLDS.LOW_STOCK_WARNING) {
               stockStatus[product.id] = 'low_stock';
             } else {
               stockStatus[product.id] = 'available';
@@ -574,15 +567,13 @@ export const useCartStore = create<SimpleCartStore>()(
           if (!product) return;
 
           const discountRate = 0.2; // 20% 할인
-          const discountedPrice = Math.round(product.originalVal * (1 - discountRate));
+          // 원본 객체를 직접 수정 (원본 동작과 일치)
+          product.price = Math.round(product.originalVal! * (1 - discountRate));
+          product.onSale = true;
 
           const updatedProducts = {
             ...state.products,
-            [productId]: {
-              ...product,
-              price: discountedPrice,
-              onSale: true,
-            },
+            [productId]: product,
           };
 
           setWithPersist({
@@ -613,15 +604,13 @@ export const useCartStore = create<SimpleCartStore>()(
           if (!product) return;
 
           const discountRate = 0.05; // 5% 할인
-          const discountedPrice = Math.round(product.originalVal * (1 - discountRate));
+          // 원본 객체를 직접 수정 (원본 동작과 일치)
+          product.price = Math.round(product.originalVal! * (1 - discountRate));
+          product.suggestSale = true;
 
           const updatedProducts = {
             ...state.products,
-            [productId]: {
-              ...product,
-              price: discountedPrice,
-              suggestSale: true,
-            },
+            [productId]: product,
           };
 
           setWithPersist({

@@ -15,12 +15,11 @@ interface CartItemProps {
  */
 export const CartItem: React.FC<CartItemProps> = ({ item }) => {
   const { products, updateItemQuantity, removeFromCart } = useCartStore();
+  console.log('cartItem', products);
 
   const product = products[item.productId];
   if (!product) return null;
-
-  const _totalPrice = product.price * item.quantity;
-  const isQuantityAtMax = item.quantity >= product.stock;
+  const isQuantityAtMax = item.quantity >= product.initialStock;
 
   /**
    * 수량 변경 핸들러
