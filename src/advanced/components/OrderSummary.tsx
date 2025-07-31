@@ -1,21 +1,27 @@
 import React from 'react';
 import { useCartStore } from '../stores';
-import { Button } from './common/Button';
 
 /**
  * 주문 요약 컴포넌트
  */
 export const OrderSummary: React.FC = () => {
-  const { cartItems, products, totalAmount, loyaltyPoints, discounts, isTuesdayDiscount } =
-    useCartStore();
+  const {
+    cartItems,
+    products,
+    totalAmount,
+    loyaltyPoints,
+    pointDetails,
+    discounts,
+    isTuesdayDiscount,
+  } = useCartStore();
 
   const hasItems = cartItems.length > 0;
-  const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const _totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   /**
    * 할인 정보 렌더링
    */
-  const renderDiscountInfo = () => {
+  const _renderDiscountInfo = () => {
     if (!discounts || discounts.length === 0) return null;
 
     return (
@@ -34,93 +40,98 @@ export const OrderSummary: React.FC = () => {
    */
   const renderSummaryDetails = () => {
     if (!hasItems) {
-      return (
-        <div className="text-sm text-gray-500 text-center py-8">장바구니에 상품을 추가해주세요</div>
-      );
+      return null;
     }
 
-    const subtotal = cartItems.reduce((sum, item) => {
-      const product = products[item.productId];
-      return sum + (product ? product.price * item.quantity : 0);
-    }, 0);
-
     return (
-      <div className="space-y-2 text-sm text-gray-600">
-        <div className="flex justify-between">
-          <span>상품 개수</span>
-          <span>{totalQuantity}개</span>
+      <div className="space-y-3">
+        {cartItems.map((item) => {
+          const product = products[item.productId];
+          if (!product) return null;
+
+          return (
+            <div key={item.productId} className="flex justify-between text-sm text-white">
+              <span>
+                {product.name} x {item.quantity}
+              </span>
+              <span>₩{(product.price * item.quantity).toLocaleString()}</span>
+            </div>
+          );
+        })}
+        <div className="flex justify-between text-sm text-white/70 pt-2">
+          <span>Subtotal</span>
+          <span>
+            ₩
+            {cartItems
+              .reduce((sum, item) => {
+                const product = products[item.productId];
+                return sum + (product ? product.price * item.quantity : 0);
+              }, 0)
+              .toLocaleString()}
+          </span>
         </div>
-        <div className="flex justify-between">
-          <span>소계</span>
-          <span>₩{subtotal.toLocaleString()}</span>
+        <div className="flex justify-between text-sm text-white/70">
+          <span>Shipping</span>
+          <span>Free</span>
         </div>
-        {renderDiscountInfo()}
       </div>
     );
   };
 
   return (
-    <aside
-      className="w-80 bg-white p-6 rounded-lg shadow-sm"
-      role="complementary"
-      aria-label="주문 요약"
-    >
-      <h2 className="text-xl font-bold mb-4 text-gray-800">주문요약</h2>
-
-      <div className="flex flex-col h-96">
-        {/* 주문 상세 내역 영역 */}
-        <div id="summary-details" className="flex-1 overflow-y-auto">
+    <div className="bg-black text-white p-8 flex flex-col">
+      <h2 className="text-xs font-medium mb-5 tracking-extra-wide uppercase">Order Summary</h2>
+      <div className="flex-1 flex flex-col">
+        <div id="summary-details" className="space-y-3">
           {renderSummaryDetails()}
         </div>
-
         <div className="mt-auto">
-          {/* 총 결제 금액 영역 */}
-          <div className="border-t border-gray-200 pt-3">
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-bold text-gray-800">총액</span>
-              <div
-                id="cart-total"
-                className="text-xl font-bold text-blue-600"
-                aria-label="총 결제 금액"
-              >
-                ₩{totalAmount.toLocaleString()}
-              </div>
+          <div id="discount-info" className="mb-4"></div>
+          <div id="cart-total" className="pt-5 border-t border-white/10">
+            <div className="flex justify-between items-baseline">
+              <span className="text-sm uppercase tracking-wider">Total</span>
+              <div className="text-2xl tracking-tight">₩{totalAmount.toLocaleString()}</div>
             </div>
-            <div
-              id="loyalty-points"
-              className="text-sm text-blue-600 mt-1"
-              aria-label="적립 포인트"
-            >
-              적립 포인트: {loyaltyPoints.toLocaleString()}p
+            <div id="loyalty-points" className="text-xs text-blue-400 mt-2 text-right">
+              {loyaltyPoints > 0 ? (
+                <div>
+                  <div>
+                    적립 포인트:{' '}
+                    <span className="font-bold">{loyaltyPoints.toLocaleString()}p</span>
+                  </div>
+                  {pointDetails.breakdown.length > 0 && (
+                    <div className="text-2xs opacity-70 mt-1">
+                      {pointDetails.breakdown.join(', ')}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                '적립 포인트: 0p'
+              )}
             </div>
           </div>
-
-          {/* 화요일 특별 할인 알림 */}
           {isTuesdayDiscount && (
-            <div
-              id="tuesday-special"
-              className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs"
-            >
+            <div id="tuesday-special" className="mt-4 p-3 bg-white/10 rounded-lg">
               <div className="flex items-center gap-2">
                 <span className="text-2xs">🎉</span>
-                <span className="text-xs uppercase tracking-wide">화요일 특별 할인!</span>
+                <span className="text-xs uppercase tracking-wide">Tuesday Special 10% Applied</span>
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* 체크아웃 버튼 */}
-      <Button fullWidth size="lg" className="mt-4" disabled={!hasItems} aria-label="결제하기">
-        주문하기
-      </Button>
-
-      {/* 추가 정보 */}
-      <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-        50,000원 이상 구매 시 무료배송
+      <button
+        className="w-full py-4 bg-white text-black text-sm font-normal uppercase tracking-super-wide cursor-pointer mt-6 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/30 disabled:opacity-50"
+        disabled={!hasItems}
+        aria-label="결제하기"
+      >
+        Proceed to Checkout
+      </button>
+      <p className="mt-4 text-2xs text-white/60 text-center leading-relaxed">
+        Free shipping on all orders.
         <br />
-        <span id="points-notice">구매 시 포인트를 적립해드립니다.</span>
+        <span id="points-notice">Earn loyalty points with purchase.</span>
       </p>
-    </aside>
+    </div>
   );
 };

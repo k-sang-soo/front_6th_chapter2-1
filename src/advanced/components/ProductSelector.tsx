@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useCartStore } from '../stores';
-import { Button } from './common/Button';
 
 /**
  * 상품 선택 컴포넌트
@@ -65,12 +64,12 @@ export const ProductSelector: React.FC = () => {
   };
 
   return (
-    <section className="bg-white p-4 rounded-lg shadow-sm mb-4" aria-label="상품 선택">
+    <div className="mb-6 pb-6 border-b border-gray-200">
       <select
         id="product-select"
         value={selectedProductId}
         onChange={handleProductSelect}
-        className="w-full border-2 border-gray-300 rounded-md p-2 mb-4 focus:border-blue-500 focus:outline-none"
+        className="w-full p-3 border border-gray-300 rounded-lg text-base mb-3"
         aria-label="구매할 상품을 선택하세요"
       >
         <option value="">상품을 선택하세요</option>
@@ -87,25 +86,24 @@ export const ProductSelector: React.FC = () => {
         })}
       </select>
 
-      <Button
+      <button
         id="add-to-cart"
-        fullWidth
         onClick={handleAddToCart}
         disabled={isAddButtonDisabled}
-        className="mb-4"
+        className="w-full py-3 bg-black text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-800 transition-all disabled:bg-gray-300"
         aria-label="선택한 상품을 장바구니에 추가"
       >
-        장바구니에 추가
-      </Button>
+        Add to Cart
+      </button>
 
       <div
         id="stock-status"
-        className="text-sm text-gray-600"
+        className="text-xs text-red-500 mt-3 whitespace-pre-line"
         aria-live="polite"
         aria-atomic="true"
       >
         {getStockStatusMessage()}
       </div>
-    </section>
+    </div>
   );
 };

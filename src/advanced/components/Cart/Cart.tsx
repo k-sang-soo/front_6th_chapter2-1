@@ -12,17 +12,12 @@ export const Cart: React.FC = () => {
   const hasItems = cartItems.length > 0;
 
   return (
-    <section
-      id="cart-items"
-      aria-label="Shopping cart items"
-      aria-live="polite"
-      className="space-y-3"
-    >
+    <div id="cart-items" aria-label="Shopping cart items" aria-live="polite" className="space-y-3">
       {hasItems ? (
         cartItems.map((item) => <CartItem key={item.productId} item={item} />)
       ) : (
         <EmptyCart />
       )}
-    </section>
+    </div>
   );
 };
