@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 
 describe('advanced test', () => {
+  // 각 테스트 전에 localStorage 클리어
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('advanced 버전이 basic 테스트와 호환되는지 확인 (간단)', async () => {
     // basic 버전을 advanced로 바꿔서 테스트
     const { beforeEach, afterEach, describe, expect, it, vi } = await import('vitest');

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCartStore } from '../stores/simpleCartStore';
+import { useCartStore } from '../stores';
 import { Button } from './common/Button';
 
 /**

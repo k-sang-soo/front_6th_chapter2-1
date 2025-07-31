@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useCartStore } from '../stores/simpleCartStore';
+import { useCartStore } from '../stores';
 import { Button } from './common/Button';
 
 /**
