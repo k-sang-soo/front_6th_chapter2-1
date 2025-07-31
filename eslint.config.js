@@ -19,6 +19,25 @@ export default defineConfig([
       'node_modules/',
     ],
   },
+  {
+    // config 파일들만 Node 환경으로
+    files: [
+      'vite.config.*',
+      'vitest.config.*',
+      '*.config.js',
+      '*.config.cjs',
+      '*.config.mjs',
+      '*.config.ts',
+    ],
+    languageOptions: {
+      globals: globals.node, // Node 글로벌 허용
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+    },
+    rules: {
+      ...prettierConfig.rules,
+    },
+  },
   // JavaScript 설정
   {
     files: ['**/*.{js,mjs,cjs}'],
