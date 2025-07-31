@@ -13,55 +13,54 @@ export const OrderSummary: React.FC = () => {
     pointDetails,
     discounts,
     isTuesdayDiscount,
-    totalQuantity,
-    subtotal,
   } = useCartStore();
 
   const hasItems = cartItems.length > 0;
 
+  // 실시간 subtotal 계산 (반응형)
+  const realTimeSubtotal = cartItems.reduce((sum, item) => {
+    const product = products[item.productId];
+    return product ? sum + product.price * item.quantity : sum;
+  }, 0);
+
+  // 총 할인 계산
+  const totalDiscountAmount = realTimeSubtotal - totalAmount;
+  const totalDiscountRate =
+    realTimeSubtotal > 0 ? (totalDiscountAmount / realTimeSubtotal) * 100 : 0;
+
   /**
-   * 할인 정보 렌더링
+   * 할인 정보 렌더링 (개별 상품 10개 이상, 전체 30개 이상 대량구매만)
    */
-  const _renderDiscountInfo = () => {
+  const renderDiscountInfo = () => {
     if (!discounts || discounts.length === 0) return null;
 
+    const discountsToShow = [];
+
+    // 1. 대량구매 할인 (30개 이상) - 우선 표시
+    const bulkDiscount = discounts.find((discount) => discount.type === 'bulk');
+    if (bulkDiscount) {
+      discountsToShow.push(bulkDiscount);
+    } else {
+      // 2. 개별 상품 할인 - 대량구매 할인이 없을 때만 하나만 표시
+      const itemDiscount = discounts.find((discount) => discount.type === 'item');
+      if (itemDiscount) {
+        discountsToShow.push(itemDiscount);
+      }
+    }
+
+    if (discountsToShow.length === 0) return null;
+
     return (
-      <div id="discount-info" className="text-sm text-green-600 space-y-1 mb-4">
-        {discounts.map((discount, index) => (
-          <div key={`${discount.type}-${index}`}>
-            {discount.message} ({discount.percentage}% 할인)
+      <div className="space-y-1">
+        {discountsToShow.map((discount, index) => (
+          <div
+            key={`${discount.type}-${index}`}
+            className="flex justify-between text-sm tracking-wide text-green-400"
+          >
+            <span className="text-xs">{discount.message}</span>
+            <span className="text-xs">-{discount.percentage}%</span>
           </div>
         ))}
-      </div>
-    );
-  };
-
-  /**
-   * 대량 구매 할인 안내 메시지 렌더링
-   */
-  const _renderBulkDiscountInfo = () => {
-    if (!hasItems) return null;
-
-    const isEligibleForBulk = totalQuantity >= 30;
-    const isEligibleForIndividual = cartItems.some((item) => item.quantity >= 10);
-
-    // 이미 대량 할인이 적용된 경우는 표시하지 않음
-    if (isEligibleForBulk && discounts.some((d) => d.type === 'bulk')) return null;
-    if (isEligibleForIndividual && discounts.some((d) => d.type === 'item')) return null;
-
-    return (
-      <div className="text-2xs text-white/50 space-y-1 mb-3">
-        {!isEligibleForBulk && <div>💡 {30 - totalQuantity}개 더 담으면 전체 15% 할인!</div>}
-        {cartItems.map((item) => {
-          const product = products[item.productId];
-          if (!product || item.quantity >= 10) return null;
-
-          return (
-            <div key={item.productId}>
-              💡 {product.name} {10 - item.quantity}개 더 담으면 개별 할인!
-            </div>
-          );
-        })}
       </div>
     );
   };
@@ -95,9 +94,9 @@ export const OrderSummary: React.FC = () => {
         <div className="border-t border-white/10 my-3"></div>
         <div className="flex justify-between text-sm tracking-wide">
           <span>Subtotal</span>
-          <span>₩{subtotal.toLocaleString()}</span>
+          <span>₩{realTimeSubtotal.toLocaleString()}</span>
         </div>
-        {/*{_renderBulkDiscountInfo()}*/}
+        {renderDiscountInfo()}
         <div className="flex justify-between text-sm text-white/70">
           <span>Shipping</span>
           <span>Free</span>
@@ -114,9 +113,21 @@ export const OrderSummary: React.FC = () => {
           {renderSummaryDetails()}
         </div>
         <div className="mt-auto">
-          <div id="discount-info" className="mb-4">
-            {_renderDiscountInfo()}
-          </div>
+          {totalDiscountAmount > 0 && (
+            <div id="discount-info" className="mb-4">
+              <div className="bg-green-500/20 rounded-lg p-3">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs uppercase tracking-wide text-green-400">총 할인율</span>
+                  <span className="text-sm font-medium text-green-400">
+                    {totalDiscountRate.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="text-2xs text-gray-300">
+                  ₩{totalDiscountAmount.toLocaleString()} 할인되었습니다
+                </div>
+              </div>
+            </div>
+          )}
           <div id="cart-total" className="pt-5 border-t border-white/10">
             <div className="flex justify-between items-baseline">
               <span className="text-sm uppercase tracking-wider">Total</span>
