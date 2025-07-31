@@ -10,7 +10,11 @@ import { createCartSlice, type CartSlice } from './slices/cartSlice';
 import { createUISlice, type UISlice } from './slices/uiSlice';
 import { persist, createCartPersistConfig } from './middleware/persistMiddleware';
 import type { Product } from '../types/product.types';
-import { PRODUCT_INFO } from '../constants';
+import { PRODUCT_INFO, INDIVIDUAL_DISCOUNT_RATES } from '../constants';
+
+// 기본 서비스들 import
+import { calculateTotalDiscount } from '../../basic/services/DiscountService';
+import { calculateTotalPoints } from '../../basic/services/PointService';
 
 /** React 컴포넌트 호환 인터페이스 */
 export interface ReactCompatibleStore {
@@ -136,6 +140,50 @@ export const useCartStore = create<CartStore>()(
           return status;
         },
 
+        // 기본 서비스 연동을 위한 헬퍼 메서드들
+        getCartItemDetails() {
+          const [, get] = args;
+          const state = get();
+          const products = state.products;
+
+          return state.cart.items.map((item) => {
+            const product = products.find((p) => p.id === item.id);
+            if (!product) {
+              throw new Error(`Product not found: ${item.id}`);
+            }
+            return {
+              productId: item.id,
+              name: product.name,
+              price: product.val,
+              quantity: item.quantity,
+              total: product.val * item.quantity,
+              discount: INDIVIDUAL_DISCOUNT_RATES[item.id] || 0,
+            };
+          });
+        },
+
+        calculateDiscounts() {
+          const [, get] = args;
+          const state = get();
+          const store = this;
+          const cartItemDetails = store.getCartItemDetails();
+          const totalQuantity = state.cart.items.reduce((sum, item) => sum + item.quantity, 0);
+
+          // 기존 DiscountService 사용
+          return calculateTotalDiscount(cartItemDetails, totalQuantity);
+        },
+
+        calculatePoints() {
+          const [, get] = args;
+          const state = get();
+          const store = this;
+          const cartItemDetails = store.getCartItemDetails();
+          const discountResult = store.calculateDiscounts();
+
+          // 기존 PointService 사용
+          return calculateTotalPoints(cartItemDetails, discountResult.finalAmount);
+        },
+
         // React 호환 액션들
         initializeProducts: () => {
           const [set] = args;
@@ -149,27 +197,123 @@ export const useCartStore = create<CartStore>()(
           const product = state.products.find((p) => p.id === productId);
 
           if (!product || product.q <= 0) {
+            if (product?.q <= 0) {
+              window.alert('재고가 부족합니다.');
+            }
             return false;
           }
 
-          const cartSlice = createCartSlice(...args);
-          cartSlice.addToCart(productId as any);
+          // 장바구니에 이미 있는지 확인
+          const existingItem = state.cart.items.find((item) => item.id === productId);
+
+          if (existingItem) {
+            // 재고 확인 (현재 장바구니 수량 + 1이 재고를 초과하는지)
+            if (existingItem.quantity >= product.q + existingItem.quantity) {
+              window.alert('재고가 부족합니다.');
+              return false;
+            }
+
+            // 수량 증가
+            const cartSlice = createCartSlice(...args);
+            cartSlice.updateCartItemQuantity(productId as any, existingItem.quantity + 1);
+          } else {
+            // 새 아이템 추가
+            const cartSlice = createCartSlice(...args);
+            cartSlice.addToCart(productId as any);
+          }
 
           // 재고 감소
           const productSlice = createProductSlice(...args);
           productSlice.updateProduct(productId as any, { q: product.q - 1 });
 
+          // 계산 업데이트
+          this.updateCalculations();
+
           return true;
         },
 
         removeFromCart: (productId: string) => {
-          const cartSlice = createCartSlice(...args);
-          cartSlice.removeFromCart(productId as any);
+          const [set, get] = args;
+          const state = get();
+          const item = state.cart.items.find((i) => i.id === productId);
+
+          if (item) {
+            // 재고 복구
+            const product = state.products.find((p) => p.id === productId);
+            if (product) {
+              const productSlice = createProductSlice(...args);
+              productSlice.updateProduct(productId as any, { q: product.q + item.quantity });
+            }
+
+            // 카트에서 제거
+            const cartSlice = createCartSlice(...args);
+            cartSlice.removeFromCart(productId as any);
+
+            // 계산 업데이트
+            this.updateCalculations();
+          }
         },
 
-        updateItemQuantity: (productId: string, quantity: number) => {
+        updateItemQuantity: (productId: string, newQuantity: number) => {
+          const [set, get] = args;
+          const state = get();
+          const item = state.cart.items.find((i) => i.id === productId);
+          const product = state.products.find((p) => p.id === productId);
+
+          if (!item || !product) return false;
+
+          if (newQuantity <= 0) {
+            // 수량이 0이면 제거
+            this.removeFromCart(productId);
+            return true;
+          }
+
+          const quantityDiff = newQuantity - item.quantity;
+
+          // 재고 확인 (증가하는 경우)
+          if (quantityDiff > 0 && quantityDiff > product.q) {
+            window.alert('재고가 부족합니다.');
+            return false;
+          }
+
+          // 수량 업데이트
           const cartSlice = createCartSlice(...args);
-          cartSlice.updateCartItemQuantity(productId as any, quantity);
+          cartSlice.updateCartItemQuantity(productId as any, newQuantity);
+
+          // 재고 업데이트
+          const productSlice = createProductSlice(...args);
+          productSlice.updateProduct(productId as any, { q: product.q - quantityDiff });
+
+          // 계산 업데이트
+          this.updateCalculations();
+
+          return true;
+        },
+
+        updateCalculations: () => {
+          const [set, get] = args;
+          const store = useCartStore.getState();
+
+          try {
+            const discountResult = store.calculateDiscounts();
+            const pointsResult = store.calculatePoints();
+
+            set((state) => ({
+              cart: {
+                ...state.cart,
+                subtotal: discountResult.subtotal,
+                finalAmount: discountResult.finalAmount,
+                loyaltyPoints: pointsResult.totalPoints,
+                discountRate: discountResult.totalDiscountRate,
+              },
+              lastCalculation: {
+                discounts: discountResult,
+                points: pointsResult,
+              },
+            }));
+          } catch (error) {
+            console.error('계산 업데이트 중 오류:', error);
+          }
         },
 
         updateStockStatus: () => {

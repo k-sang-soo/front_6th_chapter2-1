@@ -82,17 +82,6 @@ export const QUANTITY_THRESHOLDS = {
   STOCK_WARNING_THRESHOLD: 50, // 전체 재고 경고 임계값
 } as const;
 
-// 포인트 관련 상수
-export const POINTS = {
-  BASE_RATE: 0.0001, // 기본 포인트 비율 (0.01% = 1/10000)
-  TUESDAY_MULTIPLIER: 2, // 화요일 포인트 배수
-  COMBO_KEYBOARD_MOUSE: 50, // 키보드+마우스 콤보 보너스
-  FULL_SET_BONUS: 100, // 풀세트 구매 보너스
-  BULK_10_BONUS: 20, // 10개 이상 구매 보너스
-  BULK_20_BONUS: 50, // 20개 이상 구매 보너스
-  BULK_30_BONUS: 100, // 30개 이상 구매 보너스
-} as const;
-
 // 타이머 상수 (밀리초)
 export const TIMERS = {
   LIGHTNING_SALE_INTERVAL: 30000, // 번개세일 간격 (30초)
@@ -145,6 +134,21 @@ export const DISCOUNT_DISPLAY_MESSAGES = {
 // 요일 상수
 export const DAYS = {
   TUESDAY: 2,
+} as const;
+
+// 포인트 시스템
+export const POINTS = {
+  BASE_RATE: 0.001, // 기본 포인트 비율 (0.1% = 1/1000)
+  TUESDAY_MULTIPLIER: 2, // 화요일 포인트 배수
+  SET_BONUS: {
+    KEYBOARD_MOUSE: 50, // 키보드+마우스 콤보 보너스
+    FULL_SET: 100, // 풀세트 구매 보너스
+  },
+  QUANTITY_BONUS: {
+    TEN_PLUS: 20, // 10개 이상 구매 보너스
+    TWENTY_PLUS: 50, // 20개 이상 구매 보너스
+    THIRTY_PLUS: 100, // 30개 이상 구매 보너스
+  },
 } as const;
 
 // 상품 ID 검증을 위한 Set

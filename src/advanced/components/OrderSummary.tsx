@@ -16,13 +16,13 @@ export const OrderSummary: React.FC = () => {
    * 할인 정보 렌더링
    */
   const renderDiscountInfo = () => {
-    if (!discounts || Object.keys(discounts).length === 0) return null;
+    if (!discounts || discounts.length === 0) return null;
 
     return (
       <div id="discount-info" className="text-sm text-green-600 space-y-1 mb-4">
-        {Object.entries(discounts).map(([type, discount]) => (
-          <div key={type}>
-            {discount.label}: -{discount.amount.toLocaleString()}원
+        {discounts.map((discount, index) => (
+          <div key={`${discount.type}-${index}`}>
+            {discount.message} ({discount.percentage}% 할인)
           </div>
         ))}
       </div>
@@ -75,11 +75,11 @@ export const OrderSummary: React.FC = () => {
 
         <div className="mt-auto">
           {/* 총 결제 금액 영역 */}
-          <div id="cart-total" className="border-t border-gray-200 pt-3">
+          <div className="border-t border-gray-200 pt-3">
             <div className="flex justify-between items-center">
               <span className="text-lg font-bold text-gray-800">총액</span>
               <div
-                id="total-amount-display"
+                id="cart-total"
                 className="text-xl font-bold text-blue-600"
                 aria-label="총 결제 금액"
               >

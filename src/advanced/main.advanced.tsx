@@ -5,7 +5,11 @@ import { App } from './components/App';
  * React 애플리케이션 진입점
  */
 function main() {
-  const rootElement = document.getElementById('root');
+  // 테스트 호환성을 위해 'app' ID 먼저 시도, 없으면 'root' ID 사용
+  let rootElement = document.getElementById('app');
+  if (!rootElement) {
+    rootElement = document.getElementById('root');
+  }
 
   if (!rootElement) {
     throw new Error('Root element not found');

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useCartStore } from '../../stores/simpleCartStore';
-import { Button } from '../common/Button';
 
 interface CartItemType {
   productId: string;
@@ -26,10 +25,11 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
   /**
    * 수량 변경 핸들러
    */
-  const handleQuantityChange = (newQuantity: number) => {
+  const handleQuantityChange = (change: number) => {
+    const newQuantity = item.quantity + change;
     if (newQuantity <= 0) {
       removeFromCart(item.productId);
-    } else if (newQuantity <= product.stock) {
+    } else {
       updateItemQuantity(item.productId, newQuantity);
     }
   };
@@ -42,12 +42,18 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-3">
+    <div
+      id={item.productId}
+      className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 first:pt-0 last:border-b-0"
+    >
+      {/* 상품 이미지 영역 */}
+      <div className="bg-gradient-black w-16 h-16 rounded-md mb-3"></div>
+
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-medium text-gray-800 flex-1">{product.name}</h3>
         <button
           onClick={handleRemove}
-          className="text-red-500 hover:text-red-700 p-1"
+          className="remove-item text-red-500 hover:text-red-700 p-1"
           aria-label={`${product.name} 삭제`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,47 +69,35 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => handleQuantityChange(item.quantity - 1)}
-            disabled={item.quantity <= 1}
+          <button
+            className="quantity-change px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+            data-change="-1"
+            onClick={() => handleQuantityChange(-1)}
             aria-label="수량 감소"
           >
             -
-          </Button>
+          </button>
 
-          <span
-            className="mx-2 min-w-[2rem] text-center font-medium"
-            aria-label={`수량 ${item.quantity}개`}
-          >
+          <span className="quantity-number font-medium min-w-[2rem] text-center">
             {item.quantity}
           </span>
 
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => handleQuantityChange(item.quantity + 1)}
+          <button
+            className="quantity-change px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+            data-change="1"
+            onClick={() => handleQuantityChange(1)}
             disabled={isQuantityAtMax}
             aria-label="수량 증가"
           >
             +
-          </Button>
+          </button>
         </div>
 
         <div className="text-right">
-          <div className="text-sm text-gray-500">
-            ₩{product.price.toLocaleString()} × {item.quantity}
-          </div>
-          <div className="font-semibold text-gray-800">₩{totalPrice.toLocaleString()}</div>
+          <div className="font-medium">₩{totalPrice.toLocaleString()}</div>
+          {isQuantityAtMax && <div className="text-xs text-red-500">최대 수량</div>}
         </div>
       </div>
-
-      {isQuantityAtMax && (
-        <div className="mt-2 text-xs text-orange-600">
-          ⚠️ 재고가 부족합니다 (최대 {product.stock}개)
-        </div>
-      )}
     </div>
   );
 };

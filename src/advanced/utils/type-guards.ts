@@ -3,15 +3,7 @@
  * @fileoverview 런타임에서 타입을 안전하게 검증하기 위한 타입 가드 함수들을 정의합니다.
  */
 
-import type {
-  ProductId,
-  Product,
-  CartItem,
-  StockStatus,
-  DiscountType,
-  Discount,
-  AppEvent,
-} from '../types';
+import type { ProductId, Product, CartItem, StockStatus, DiscountType, Discount } from '../types';
 import { VALID_PRODUCT_IDS } from '../constants';
 
 /**
@@ -145,58 +137,15 @@ export function isProductArray(value: unknown): value is Product[] {
 }
 
 /**
- * 객체가 유효한 AppEvent인지 확인합니다.
+ * 객체가 유효한 이벤트인지 확인합니다.
  */
-export function isAppEvent(value: unknown): value is AppEvent {
+export function isValidEvent(value: unknown): value is { type: string; payload?: unknown } {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
 
   const obj = value as Record<string, unknown>;
-
-  if (typeof obj.type !== 'string') {
-    return false;
-  }
-
-  switch (obj.type) {
-    case 'ADD_TO_CART':
-    case 'REMOVE_FROM_CART':
-    case 'UPDATE_CART_ITEM':
-      return (
-        typeof obj.payload === 'object' &&
-        obj.payload !== null &&
-        isValidProductId((obj.payload as Record<string, unknown>).productId) &&
-        typeof (obj.payload as Record<string, unknown>).quantity === 'number'
-      );
-    case 'CLEAR_CART':
-      return obj.payload === undefined;
-    case 'ACTIVATE_LIGHTNING_SALE':
-    case 'ACTIVATE_SUGGESTION_SALE':
-      return (
-        typeof obj.payload === 'object' &&
-        obj.payload !== null &&
-        isValidProductId((obj.payload as Record<string, unknown>).productId)
-      );
-    case 'DEACTIVATE_LIGHTNING_SALE':
-    case 'DEACTIVATE_SUGGESTION_SALE':
-    case 'CLEAR_ERROR':
-      return obj.payload === undefined;
-    case 'UPDATE_STOCK':
-      return (
-        typeof obj.payload === 'object' &&
-        obj.payload !== null &&
-        isValidProductId((obj.payload as Record<string, unknown>).productId) &&
-        typeof (obj.payload as Record<string, unknown>).stock === 'number'
-      );
-    case 'SET_ERROR':
-      return (
-        typeof obj.payload === 'object' &&
-        obj.payload !== null &&
-        typeof (obj.payload as Record<string, unknown>).message === 'string'
-      );
-    default:
-      return false;
-  }
+  return typeof obj.type === 'string';
 }
 
 /**

@@ -19,12 +19,7 @@ export const Cart: React.FC = () => {
       className="space-y-3"
     >
       {hasItems ? (
-        <>
-          <h2 className="sr-only">장바구니 상품 목록</h2>
-          {cartItems.map((item) => (
-            <CartItem key={item.productId} item={item} />
-          ))}
-        </>
+        cartItems.map((item) => <CartItem key={item.productId} item={item} />)
       ) : (
         <EmptyCart />
       )}

@@ -25,3 +25,8 @@ dist-ssr
 
 CLAUDE.md
 .claude
+
+# BMAD Core
+.bmad-core/
+.serena/
+web-bundles/

@@ -45,7 +45,7 @@ export const ProductSelector: React.FC = () => {
    * 선택된 상품 정보 가져오기
    */
   const selectedProduct = selectedProductId ? products[selectedProductId] : null;
-  const isOutOfStock = selectedProduct && selectedProduct.stock === 0;
+  const isOutOfStock = Boolean(selectedProduct && selectedProduct.stock === 0);
   const isAddButtonDisabled = !selectedProductId || isOutOfStock;
 
   /**
@@ -79,11 +79,7 @@ export const ProductSelector: React.FC = () => {
           const stockInfo = isProductOutOfStock ? ' (품절)' : '';
 
           return (
-            <option
-              key={product.id}
-              value={product.id}
-              disabled={isProductOutOfStock ? true : undefined}
-            >
+            <option key={product.id} value={product.id} disabled={isProductOutOfStock}>
               {product.name} - ₩{product.price.toLocaleString()}
               {stockInfo}
             </option>
@@ -92,6 +88,7 @@ export const ProductSelector: React.FC = () => {
       </select>
 
       <Button
+        id="add-to-cart"
         fullWidth
         onClick={handleAddToCart}
         disabled={isAddButtonDisabled}
