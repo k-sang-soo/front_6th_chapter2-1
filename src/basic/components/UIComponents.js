@@ -57,7 +57,7 @@ export const createProductSelector = () => {
 export const createHelpModalButton = () => {
   return `
     <button id="help-modal-toggle" 
-            class="fixed top-4 right-4 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 z-10"
+            class="fixed top-4 right-4 bg-black text-white p-3 rounded-full hover:bg-gray-900 transition-colors z-50"
             aria-label="도움말 열기"
             aria-expanded="false"
             aria-controls="help-modal-panel">
