@@ -3,15 +3,11 @@
  * 장바구니 계산, 할인 적용, 화면 업데이트 등의 비즈니스 로직을 담당합니다.
  */
 
-import {
-  calculateCartTotalQuantity,
-  getCartItemDetails,
-  isCartEmpty,
-} from '../services/CartService.js';
+import { calculateCartTotalQuantity, getCartItemDetails, isCartEmpty } from './CartService.js';
 
-import { calculateTotalDiscount } from '../services/DiscountService.js';
+import { calculateTotalDiscount } from './DiscountService.js';
 
-import { calculateTotalPoints, generatePointsDisplayHTML } from '../services/PointService.js';
+import { calculateTotalPoints, generatePointsDisplayHTML } from './PointService.js';
 
 import { updateCartItemDisplay } from '../components/UIComponents.js';
 
@@ -96,7 +92,6 @@ function updateItemCountDisplay(totalItemCount) {
  * 주문 요약 영역을 업데이트합니다.
  * @param {Array} cartItemDetails - 장바구니 아이템 상세 정보
  * @param {number} subtotal - 소계
- * @param {Object} discountResult - 할인 계산 결과
  */
 function updateOrderSummaryDisplay(cartItemDetails, subtotal) {
   const summaryDetails = document.getElementById('summary-details');
@@ -114,18 +109,45 @@ function updateOrderSummaryDisplay(cartItemDetails, subtotal) {
       .join('');
 
     // Subtotal과 Shipping 정보 추가
-    const summaryFooterHTML = `
+    const subtotalHTML = `
       <div class="flex justify-between text-sm text-white/70 pt-2">
         <span>Subtotal</span>
         <span>${formatPrice(subtotal)}</span>
       </div>
+    `;
+
+    // 대량 할인 안내 메시지 생성
+    const totalQuantity = cartItemDetails.reduce((sum, item) => sum + item.quantity, 0);
+    let bulkDiscountHintsHTML = '';
+
+    if (totalQuantity < 30) {
+      bulkDiscountHintsHTML += `
+        <div class="text-2xs text-white/50 mb-2">
+          💡 ${30 - totalQuantity}개 더 담으면 전체 15% 할인!
+        </div>
+      `;
+    }
+
+    // 개별 상품 10개 할인 안내
+    cartItemDetails.forEach((item) => {
+      if (item.quantity < 10) {
+        bulkDiscountHintsHTML += `
+          <div class="text-2xs text-white/50 mb-1">
+            💡 ${item.name} ${10 - item.quantity}개 더 담으면 개별 할인!
+          </div>
+        `;
+      }
+    });
+
+    const shippingHTML = `
       <div class="flex justify-between text-sm text-white/70">
         <span>Shipping</span>
         <span>Free</span>
       </div>
     `;
 
-    summaryDetails.innerHTML = itemDetailsHTML + summaryFooterHTML;
+    summaryDetails.innerHTML =
+      itemDetailsHTML + subtotalHTML + bulkDiscountHintsHTML + shippingHTML;
   }
 }
 
